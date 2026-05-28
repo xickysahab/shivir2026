@@ -7,7 +7,12 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
+        // --- OPTION A: LOCAL BACKEND (Default) ---
         target: 'http://localhost:5001',
+        
+        // --- OPTION B: LIVE PRODUCTION BACKEND (Uncomment to use Render backend locally) ---
+        // target: 'https://shivir2026.onrender.com',
+        
         changeOrigin: true,
         secure: false,
       },
