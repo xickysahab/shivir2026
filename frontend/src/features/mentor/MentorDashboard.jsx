@@ -3,10 +3,12 @@ import { useNavigate } from 'react-router-dom';
 import StudentsTable from '../shared/StudentsTable';
 import MentorOverview from './MentorOverview';
 import AttendanceReport from '../shared/AttendanceReport';
+import useIsMobile from '../../hooks/useIsMobile';
 import styles from './MentorDashboard.styles';
 
 export default function MentorDashboard() {
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
   const name = localStorage.getItem('userName') || 'Mentor';
   const role = localStorage.getItem('userRole') || 'mentor';
   const token = localStorage.getItem('token');
@@ -105,22 +107,173 @@ export default function MentorDashboard() {
     navigate('/');
   };
 
+  const navTabs = [
+    { key: 'overview', icon: '📊', label: 'Dashboard' },
+    { key: 'students', icon: '🎓', label: 'Students' },
+    { key: 'attendance', icon: '📅', label: 'Attendance' },
+    { key: 'report', icon: '📜', label: 'Report' }
+  ];
+
+  const pageTitles = {
+    overview: 'Dashboard Overview',
+    students: 'Students Directory',
+    attendance: 'Level-wise Attendance',
+    report: 'Attendance Report & History'
+  };
+
+  const renderAttendanceContent = () => (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+      <div style={isMobile ? styles.mobileControlPanel : styles.controlPanel}>
+        <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
+          <div style={styles.datePickerWrapper}>
+            <label style={styles.controlLabel}>Select Date</label>
+            <input type="date" value={selectedDate} onChange={(e) => setSelectedDate(e.target.value)} style={styles.dateInput} max={role !== 'admin' ? localToday : undefined} disabled={role !== 'admin'} />
+            {role !== 'admin' && <span style={{fontSize: '12px', color: 'rgba(255,255,255,0.4)', marginTop: '4px'}}>Locked to today</span>}
+          </div>
+          <div style={styles.datePickerWrapper}>
+            <label style={styles.controlLabel}>Select Level</label>
+            <select value={selectedLevel} onChange={(e) => setSelectedLevel(e.target.value)} style={styles.dateInput}>
+              <option value="Level 1">Level 1</option>
+              <option value="Level 2">Level 2</option>
+              <option value="Level 3">Level 3</option>
+              <option value="Level 4">Level 4</option>
+              <option value="Level 5">Level 5</option>
+              <option value="प्रौढ़ कक्षा">प्रौढ़ कक्षा</option>
+            </select>
+          </div>
+        </div>
+
+        <div style={isMobile ? styles.mobileStatsRow : styles.statsRow}>
+          <div style={{...styles.statCard, ...(isMobile ? {padding: '8px 4px', minWidth: 0, borderRadius: '8px'} : {})}}><div style={{...styles.statValue, ...(isMobile ? {fontSize: '16px'} : {})}}>{totalStudents}</div><div style={{...styles.statLabel, ...(isMobile ? {fontSize: '10px', letterSpacing: 0} : {})}}>Total</div></div>
+          <div style={{...styles.statCard, borderColor: 'rgba(16, 185, 129, 0.2)', ...(isMobile ? {padding: '8px 4px', minWidth: 0, borderRadius: '8px'} : {})}}><div style={{...styles.statValue, color: '#10b981', ...(isMobile ? {fontSize: '16px'} : {})}}>{presentCount}</div><div style={{...styles.statLabel, ...(isMobile ? {fontSize: '10px', letterSpacing: 0} : {})}}>Present</div></div>
+          <div style={{...styles.statCard, borderColor: 'rgba(244, 63, 94, 0.2)', ...(isMobile ? {padding: '8px 4px', minWidth: 0, borderRadius: '8px'} : {})}}><div style={{...styles.statValue, color: '#f43f5e', ...(isMobile ? {fontSize: '16px'} : {})}}>{absentCount}</div><div style={{...styles.statLabel, ...(isMobile ? {fontSize: '10px', letterSpacing: 0} : {})}}>Absent</div></div>
+          <div style={{...styles.statCard, ...(isMobile ? {padding: '8px 4px', minWidth: 0, borderRadius: '8px'} : {})}}><div style={{...styles.statValue, ...(isMobile ? {fontSize: '16px'} : {})}}>{attendanceRate}%</div><div style={{...styles.statLabel, ...(isMobile ? {fontSize: '10px', letterSpacing: 0} : {})}}>Rate</div></div>
+        </div>
+      </div>
+
+      <div style={styles.studentGrid}>
+        {loadingAttendance ? (
+          <div style={{color: 'white', padding: '20px'}}>Loading...</div>
+        ) : attendanceData.length === 0 ? (
+          <div style={{color: 'white', padding: '20px'}}>No students found for this level.</div>
+        ) : (
+          attendanceData.map(student => (
+            <div key={student.id} style={isMobile ? styles.mobileStudentRow : styles.studentRow}>
+              <div style={{...styles.studentInfo, ...(isMobile ? {gap: '10px'} : {})}}>
+                <div style={{...styles.studentAvatar, ...(isMobile ? {width: '32px', height: '32px', fontSize: '13px'} : {})}}>{student.name.charAt(0).toUpperCase()}</div>
+                <div>
+                  <div style={{...styles.studentName, ...(isMobile ? {fontSize: '13px', marginBottom: '2px'} : {})}}>{student.name}</div>
+                  <div style={{...styles.studentMeta, ...(isMobile ? {fontSize: '11px'} : {})}}>Roll: {student.roll_no} | {student.gender}</div>
+                </div>
+              </div>
+              <div style={{...styles.toggleGroup, ...(isMobile ? {gap: '4px', padding: '3px', borderRadius: '10px'} : {})}}>
+                <button style={{...(student.status === 'Present' ? styles.toggleBtnPresentActive : styles.toggleBtnPresent), ...(isMobile ? {padding: '6px 10px', fontSize: '12px', borderRadius: '7px'} : {})}} onClick={() => handleStatusChange(student.id, 'Present')}>{isMobile ? 'P' : 'Present'}</button>
+                <button style={{...(student.status === 'Absent' ? styles.toggleBtnAbsentActive : styles.toggleBtnAbsent), ...(isMobile ? {padding: '6px 10px', fontSize: '12px', borderRadius: '7px'} : {})}} onClick={() => handleStatusChange(student.id, 'Absent')}>{isMobile ? 'A' : 'Absent'}</button>
+                <button style={{...(student.status === null ? styles.toggleBtnClearActive : styles.toggleBtnClear), ...(isMobile ? {padding: '6px 8px', borderRadius: '7px'} : {})}} onClick={() => handleStatusChange(student.id, null)} title="Clear"><span style={{ fontSize: isMobile ? '12px' : '14px' }}>↺</span></button>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+
+      <div style={{ 
+        ...styles.floatingSaveBar, 
+        ...(isMobile ? { 
+          bottom: '72px',
+          right: '16px',
+          left: 'auto',
+          background: 'none', 
+          border: 'none', 
+          padding: 0,
+          zIndex: 100,
+        } : {}) 
+      }}>
+        <button onClick={saveAttendance} disabled={savingAttendance} style={{
+          ...styles.saveBtn, 
+          ...(isMobile ? {
+            borderRadius: '50px', 
+            padding: '10px 16px', 
+            fontSize: '13px',
+            fontWeight: 700,
+            boxShadow: '0 6px 20px rgba(99, 102, 241, 0.45)',
+            background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
+          } : {})
+        }}>
+          {savingAttendance ? 'Saving...' : '💾 Save'}
+        </button>
+      </div>
+    </div>
+  );
+
+  const renderContent = () => (
+    <>
+      {activeTab === 'overview' && <MentorOverview />}
+      {activeTab === 'report' && <AttendanceReport />}
+      {activeTab === 'students' && <div style={{ animation: 'slideUp 0.5s ease' }}><StudentsTable /></div>}
+      {activeTab === 'attendance' && renderAttendanceContent()}
+    </>
+  );
+
+  if (isMobile) {
+    return (
+      <div style={styles.page}>
+        <div style={styles.orb1}></div>
+        <div style={styles.orb2}></div>
+        <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', position: 'relative', zIndex: 10 }}>
+          <div style={styles.mobileTopBar} className="glass-bar">
+            <div style={styles.mobileTopBarLeft}>
+              <svg width="24" height="24" viewBox="0 0 28 28" fill="none">
+                <defs><linearGradient id="navLogoGradMM" x1="0" y1="0" x2="28" y2="28"><stop offset="0%" stopColor="#6366f1" /><stop offset="100%" stopColor="#a78bfa" /></linearGradient></defs>
+                <rect width="28" height="28" rx="8" fill="url(#navLogoGradMM)" />
+                <text x="14" y="19" textAnchor="middle" fill="white" fontSize="14" fontWeight="800" fontFamily="Inter, sans-serif">S</text>
+              </svg>
+              <h2 style={styles.mobileTopBarTitle}>Shivir 2026</h2>
+              <span style={{ fontSize: '10px', fontWeight: 700, color: '#c084fc', textTransform: 'uppercase', background: 'rgba(167,139,250,0.12)', padding: '3px 8px', borderRadius: '8px' }}>Mentor</span>
+            </div>
+            <button onClick={handleLogout} style={styles.mobileLogoutBtn}>Logout</button>
+          </div>
+
+          <div style={styles.mobileContentArea} className="mobile-scroll">
+            <header style={styles.mobileMainHeader}>
+              <h1 style={styles.mobilePageTitle}>{pageTitles[activeTab]}</h1>
+            </header>
+            <div key={activeTab} className="tab-content-fade">
+              {renderContent()}
+            </div>
+          </div>
+
+          <nav style={styles.bottomNav}>
+            {navTabs.map(tab => (
+              <button key={tab.key} className={`bottom-nav-item${activeTab === tab.key ? ' active' : ''}`} style={activeTab === tab.key ? styles.bottomNavItemActive : styles.bottomNavItem} onClick={() => setActiveTab(tab.key)}>
+                <span style={{ fontSize: '18px' }}>{tab.icon}</span>
+                {tab.label}
+              </button>
+            ))}
+          </nav>
+        </div>
+
+        {toast.message && (
+          <div className="toast-animate" style={{
+            ...(toast.type === 'error' ? styles.toastError : styles.toastSuccess),
+            ...(isMobile ? { bottom: '72px', right: '16px', left: '16px', transform: 'none', padding: '10px 16px', fontSize: '13px', borderRadius: '12px', gap: '8px' } : {})
+          }}>
+            {toast.message}
+          </div>
+        )}
+      </div>
+    );
+  }
+
   return (
     <div style={styles.page}>
       <div style={styles.orb1}></div>
       <div style={styles.orb2}></div>
-
       <div style={styles.layout}>
         <aside style={styles.sidebar}>
           <div style={styles.sidebarHeader}>
             <div style={styles.logoMark}>
               <svg width="24" height="24" viewBox="0 0 28 28" fill="none">
-                <defs>
-                  <linearGradient id="navLogoGradM" x1="0" y1="0" x2="28" y2="28">
-                    <stop offset="0%" stopColor="#6366f1" />
-                    <stop offset="100%" stopColor="#a78bfa" />
-                  </linearGradient>
-                </defs>
+                <defs><linearGradient id="navLogoGradM" x1="0" y1="0" x2="28" y2="28"><stop offset="0%" stopColor="#6366f1" /><stop offset="100%" stopColor="#a78bfa" /></linearGradient></defs>
                 <rect width="28" height="28" rx="8" fill="url(#navLogoGradM)" />
                 <text x="14" y="19" textAnchor="middle" fill="white" fontSize="14" fontWeight="800" fontFamily="Inter, sans-serif">S</text>
               </svg>
@@ -132,30 +285,11 @@ export default function MentorDashboard() {
           </div>
 
           <div style={styles.navMenu}>
-            <button 
-              style={activeTab === 'overview' ? styles.navItemActive : styles.navItem} 
-              onClick={() => setActiveTab('overview')}
-            >
-              <span style={{ fontSize: '18px' }}>📊</span> Dashboard
-            </button>
-            <button 
-              style={activeTab === 'students' ? styles.navItemActive : styles.navItem} 
-              onClick={() => setActiveTab('students')}
-            >
-              <span style={{ fontSize: '18px' }}>🎓</span> Students
-            </button>
-            <button 
-              style={activeTab === 'attendance' ? styles.navItemActive : styles.navItem} 
-              onClick={() => setActiveTab('attendance')}
-            >
-              <span style={{ fontSize: '18px' }}>📅</span> Attendance
-            </button>
-            <button 
-              style={activeTab === 'report' ? styles.navItemActive : styles.navItem} 
-              onClick={() => setActiveTab('report')}
-            >
-              <span style={{ fontSize: '18px' }}>📜</span> Attendance Report
-            </button>
+            {navTabs.map(tab => (
+              <button key={tab.key} className={activeTab !== tab.key ? 'nav-item-hover' : ''} style={activeTab === tab.key ? styles.navItemActive : styles.navItem} onClick={() => setActiveTab(tab.key)}>
+                <span style={{ fontSize: '18px' }}>{tab.icon}</span> {tab.label}
+              </button>
+            ))}
           </div>
 
           <div style={styles.sidebarFooter}>
@@ -164,11 +298,7 @@ export default function MentorDashboard() {
               <div style={styles.userName}>{name}</div>
             </div>
             <button onClick={handleLogout} style={styles.logoutBtn}>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-                <polyline points="16 17 21 12 16 7"></polyline>
-                <line x1="21" y1="12" x2="9" y2="12"></line>
-              </svg>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
               Logout
             </button>
           </div>
@@ -176,153 +306,20 @@ export default function MentorDashboard() {
 
         <main style={styles.mainContent}>
           <header style={styles.mainHeader}>
-            <h1 style={styles.pageTitle}>
-              {activeTab === 'overview' && 'Dashboard Overview'}
-              {activeTab === 'students' && 'Students Directory'}
-              {activeTab === 'attendance' && 'Level-wise Attendance'}
-              {activeTab === 'report' && 'Attendance Report & History'}
-            </h1>
+            <h1 style={styles.pageTitle}>{pageTitles[activeTab]}</h1>
           </header>
-
           <div style={styles.contentArea}>
-            {activeTab === 'overview' && (
-              <MentorOverview />
-            )}
-
-            {activeTab === 'report' && (
-              <AttendanceReport />
-            )}
-
-            {activeTab === 'students' && (
-              <div style={{ animation: 'slideUp 0.5s ease' }}>
-                <StudentsTable />
-              </div>
-            )}
-
-            {activeTab === 'attendance' && (
-              <div style={{ animation: 'slideUp 0.5s ease', display: 'flex', flexDirection: 'column', gap: '24px' }}>
-                
-                <div style={styles.controlPanel}>
-                  <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
-                    <div style={styles.datePickerWrapper}>
-                      <label style={styles.controlLabel}>Select Date</label>
-                      <input 
-                        type="date" 
-                        value={selectedDate}
-                        onChange={(e) => setSelectedDate(e.target.value)}
-                        style={styles.dateInput}
-                        max={role !== 'admin' ? localToday : undefined}
-                        disabled={role !== 'admin'}
-                      />
-                      {role !== 'admin' && (
-                        <span style={{fontSize: '12px', color: 'rgba(255,255,255,0.4)', marginTop: '4px'}}>Locked to today</span>
-                      )}
-                    </div>
-                    
-                    <div style={styles.datePickerWrapper}>
-                      <label style={styles.controlLabel}>Select Level</label>
-                      <select 
-                        value={selectedLevel}
-                        onChange={(e) => setSelectedLevel(e.target.value)}
-                        style={styles.dateInput}
-                      >
-                        <option value="Level 1">Level 1</option>
-                        <option value="Level 2">Level 2</option>
-                        <option value="Level 3">Level 3</option>
-                        <option value="Level 4">Level 4</option>
-                        <option value="Level 5">Level 5</option>
-                        <option value="प्रौढ़ कक्षा">प्रौढ़ कक्षा</option>
-                      </select>
-                    </div>
-                  </div>
-
-                  <div style={styles.statsRow}>
-                    <div style={styles.statCard}>
-                      <div style={styles.statValue}>{totalStudents}</div>
-                      <div style={styles.statLabel}>Total</div>
-                    </div>
-                    <div style={{...styles.statCard, borderColor: 'rgba(16, 185, 129, 0.2)'}}>
-                      <div style={{...styles.statValue, color: '#10b981'}}>{presentCount}</div>
-                      <div style={styles.statLabel}>Present</div>
-                    </div>
-                    <div style={{...styles.statCard, borderColor: 'rgba(244, 63, 94, 0.2)'}}>
-                      <div style={{...styles.statValue, color: '#f43f5e'}}>{absentCount}</div>
-                      <div style={styles.statLabel}>Absent</div>
-                    </div>
-                    <div style={styles.statCard}>
-                      <div style={styles.statValue}>{attendanceRate}%</div>
-                      <div style={styles.statLabel}>Rate</div>
-                    </div>
-                  </div>
-                </div>
-
-
-
-                <div style={styles.studentGrid}>
-                  {loadingAttendance ? (
-                    <div style={{color: 'white', padding: '20px'}}>Loading...</div>
-                  ) : attendanceData.length === 0 ? (
-                    <div style={{color: 'white', padding: '20px'}}>No students found for this level.</div>
-                  ) : (
-                    attendanceData.map(student => (
-                      <div key={student.id} style={styles.studentRow}>
-                        <div style={styles.studentInfo}>
-                          <div style={styles.studentAvatar}>{student.name.charAt(0).toUpperCase()}</div>
-                          <div>
-                            <div style={styles.studentName}>{student.name}</div>
-                            <div style={styles.studentMeta}>Roll: {student.roll_no} | {student.gender}</div>
-                          </div>
-                        </div>
-                        <div style={styles.toggleGroup}>
-                          <button 
-                            style={student.status === 'Present' ? styles.toggleBtnPresentActive : styles.toggleBtnPresent}
-                            onClick={() => handleStatusChange(student.id, 'Present')}
-                          >
-                            Present
-                          </button>
-                          <button 
-                            style={student.status === 'Absent' ? styles.toggleBtnAbsentActive : styles.toggleBtnAbsent}
-                            onClick={() => handleStatusChange(student.id, 'Absent')}
-                          >
-                            Absent
-                          </button>
-                          <button 
-                            style={student.status === null ? styles.toggleBtnClearActive : styles.toggleBtnClear}
-                            onClick={() => handleStatusChange(student.id, null)}
-                            title="Clear"
-                          >
-                            <span style={{ fontSize: '14px' }}>↺</span>
-                          </button>
-                        </div>
-                      </div>
-                    ))
-                  )}
-                </div>
-
-                <div style={styles.floatingSaveBar}>
-                  <button onClick={saveAttendance} disabled={savingAttendance} style={styles.saveBtn}>
-                    {savingAttendance ? 'Saving...' : '💾 Save Attendance'}
-                  </button>
-                </div>
-
-              </div>
-            )}
+            {renderContent()}
           </div>
         </main>
       </div>
 
       {toast.message && (
-        <div style={toast.type === 'error' ? styles.toastError : styles.toastSuccess}>
+        <div className="toast-animate" style={toast.type === 'error' ? styles.toastError : styles.toastSuccess}>
           {toast.type === 'error' ? (
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-              <circle cx="12" cy="12" r="10"></circle>
-              <line x1="15" y1="9" x2="9" y2="15"></line>
-              <line x1="9" y1="9" x2="15" y2="15"></line>
-            </svg>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>
           ) : (
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-              <polyline points="20 6 9 17 4 12"></polyline>
-            </svg>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
           )}
           {toast.message}
         </div>

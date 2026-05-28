@@ -115,6 +115,7 @@ const styles = {
     display: 'flex',
     flexDirection: 'column',
     overflowY: 'auto',
+    scrollBehavior: 'smooth',
   },
   mainHeader: {
     padding: '32px 40px',
@@ -235,6 +236,70 @@ const styles = {
     background: 'linear-gradient(135deg, #e11d48, #fb7185)', color: '#ffffff',
     borderRadius: '14px', fontSize: '14px', fontWeight: 600,
     boxShadow: '0 8px 30px rgba(225, 29, 72, 0.3)', animation: 'slideUp 0.3s ease',
+  },
+
+  /* ── Mobile Styles ── */
+  mobileTopBar: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: '10px 16px',
+    background: 'rgba(15, 15, 25, 0.75)',
+    backdropFilter: 'blur(24px) saturate(180%)',
+    WebkitBackdropFilter: 'blur(24px) saturate(180%)',
+    borderBottom: '1px solid rgba(255, 255, 255, 0.06)',
+    position: 'sticky',
+    top: 0,
+    zIndex: 50,
+  },
+  mobileTopBarLeft: { display: 'flex', alignItems: 'center', gap: '10px' },
+  mobileTopBarTitle: { margin: 0, fontSize: '15px', fontWeight: 800, color: 'rgba(255,255,255,0.95)', letterSpacing: '-0.02em' },
+  mobileLogoutBtn: {
+    background: 'rgba(239, 68, 68, 0.12)', border: '1px solid rgba(239, 68, 68, 0.2)',
+    borderRadius: '8px', padding: '6px 10px', color: '#f87171',
+    fontSize: '11px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px',
+    transition: 'all 0.2s ease',
+  },
+  bottomNav: {
+    position: 'fixed', bottom: 0, left: 0, right: 0,
+    display: 'flex', justifyContent: 'space-around', alignItems: 'center',
+    background: 'rgba(12, 12, 22, 0.92)',
+    backdropFilter: 'blur(24px) saturate(180%)',
+    WebkitBackdropFilter: 'blur(24px) saturate(180%)',
+    borderTop: '1px solid rgba(255, 255, 255, 0.06)',
+    padding: '8px 0 env(safe-area-inset-bottom, 8px) 0', zIndex: 100,
+  },
+  bottomNavItem: {
+    display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '3px',
+    background: 'none', border: 'none', color: 'rgba(255,255,255,0.35)',
+    fontSize: '10px', fontWeight: 600, cursor: 'pointer', padding: '8px 14px', borderRadius: '12px',
+    transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
+    position: 'relative', letterSpacing: '0.02em', minWidth: '56px',
+  },
+  bottomNavItemActive: {
+    display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '3px',
+    background: 'rgba(167, 139, 250, 0.12)', border: 'none', color: '#c084fc',
+    fontSize: '10px', fontWeight: 700, cursor: 'pointer', padding: '8px 14px', borderRadius: '12px',
+    position: 'relative', letterSpacing: '0.02em', minWidth: '56px',
+  },
+  mobileContentArea: {
+    flex: 1, padding: '16px 16px', paddingBottom: '90px', overflowY: 'auto',
+    WebkitOverflowScrolling: 'touch',
+    overscrollBehaviorY: 'contain',
+    scrollBehavior: 'smooth',
+  },
+  mobileMainHeader: { padding: '8px 0 10px 0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
+  mobilePageTitle: { margin: 0, fontSize: '20px', fontWeight: 800, color: 'white', letterSpacing: '-0.03em' },
+  mobileControlPanel: {
+    display: 'flex', flexDirection: 'column', gap: '12px',
+    background: 'rgba(255, 255, 255, 0.02)', border: '1px solid rgba(255, 255, 255, 0.05)',
+    padding: '12px', borderRadius: '12px',
+  },
+  mobileStatsRow: { display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '6px' },
+  mobileStudentRow: {
+    background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)',
+    padding: '10px 12px', borderRadius: '12px', display: 'flex', flexDirection: 'column', gap: '8px',
+    transition: 'all 0.2s ease',
   }
 };
 

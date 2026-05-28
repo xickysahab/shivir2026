@@ -9,6 +9,7 @@ const styles = {
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
+    flexWrap: 'wrap',
     background: 'rgba(255, 255, 255, 0.02)',
     border: '1px solid rgba(255, 255, 255, 0.05)',
     padding: '24px',
@@ -20,7 +21,7 @@ const styles = {
   dateInput: {
     background: 'rgba(0,0,0,0.3)', color: 'white', border: '1px solid rgba(255,255,255,0.1)', padding: '12px 16px', borderRadius: '10px', fontSize: '15px', outline: 'none', fontFamily: 'inherit', cursor: 'pointer'
   },
-  statsRow: { display: 'flex', gap: '16px' },
+  statsRow: { display: 'flex', gap: '16px', flexWrap: 'wrap' },
   statCard: { background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.05)', padding: '16px 24px', borderRadius: '12px', display: 'flex', flexDirection: 'column', alignItems: 'center', minWidth: '120px' },
   statValue: { color: 'white', fontSize: '28px', fontWeight: 800, marginBottom: '4px' },
   statLabel: { color: 'rgba(255,255,255,0.5)', fontSize: '12px', fontWeight: 600, textTransform: 'uppercase' },

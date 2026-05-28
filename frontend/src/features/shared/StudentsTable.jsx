@@ -1,8 +1,47 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import styles from './StudentsTable.styles';
 import StudentDetailsModal from './StudentDetailsModal';
+import useIsMobile from '../../hooks/useIsMobile';
+
+// Skeleton loading row component
+const SkeletonRows = ({ count = 5, columns = 6 }) => (
+  <>
+    {Array.from({ length: count }).map((_, i) => (
+      <tr key={`skeleton-${i}`} className="skeleton-row">
+        {Array.from({ length: columns }).map((_, j) => (
+          <td key={j} style={styles.td}>
+            <div className="skeleton-cell" style={{ width: j === 1 ? '140px' : j === 5 ? '100px' : '80px', height: '14px' }}></div>
+          </td>
+        ))}
+      </tr>
+    ))}
+  </>
+);
+
+// Mobile skeleton card
+const MobileSkeletonCards = ({ count = 4 }) => (
+  <>
+    {Array.from({ length: count }).map((_, i) => (
+      <div key={`mskel-${i}`} style={styles.mobileCard}>
+        <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+          <div className="skeleton" style={{ width: '40px', height: '40px', borderRadius: '50%' }}></div>
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '6px' }}>
+            <div className="skeleton-cell" style={{ width: '60%', height: '14px' }}></div>
+            <div className="skeleton-cell" style={{ width: '40%', height: '10px' }}></div>
+          </div>
+        </div>
+        <div style={{ display: 'flex', gap: '16px', paddingTop: '10px', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+          <div className="skeleton-cell" style={{ width: '50px', height: '12px' }}></div>
+          <div className="skeleton-cell" style={{ width: '50px', height: '12px' }}></div>
+          <div className="skeleton-cell" style={{ width: '50px', height: '12px' }}></div>
+        </div>
+      </div>
+    ))}
+  </>
+);
 
 export default function StudentsTable() {
+  const isMobile = useIsMobile();
   const [students, setStudents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -41,6 +80,21 @@ export default function StudentsTable() {
     'Content-Type': 'application/json',
     'Authorization': `Bearer ${token}`
   };
+
+  // Close modals on Escape key
+  const handleKeyDown = useCallback((e) => {
+    if (e.key === 'Escape') {
+      setShowAddModal(false);
+      setShowEditModal(false);
+      setShowPointsModal(false);
+      setShowDetailsModal(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [handleKeyDown]);
 
   // Reset page to 1 when filters change
   useEffect(() => {
@@ -221,14 +275,54 @@ export default function StudentsTable() {
     e.target.value = '';
   };
 
+  // Mobile card renderer
+  const renderMobileCards = () => {
+    if (loading) return <MobileSkeletonCards count={4} />;
+    if (students.length === 0) return <div style={styles.empty}>No students found</div>;
+    
+    return students.map(s => (
+      <div key={s.id} className="mobile-card" style={styles.mobileCard}>
+        <div style={styles.mobileCardTop}>
+          <div style={styles.mobileCardInfo}>
+            <div style={styles.mobileCardAvatar}>{s.name.charAt(0).toUpperCase()}</div>
+            <div>
+              <div style={styles.mobileCardName}>{s.name}</div>
+              <div style={styles.mobileCardMeta}>Roll: {s.roll_no} • {s.mobile}</div>
+            </div>
+          </div>
+          <div style={styles.actionBtns}>
+            <button className="btn-action" style={styles.btnIcon} onClick={() => openDetailsModal(s)} title="View Details">ℹ️</button>
+            <button className="btn-action" style={styles.btnIcon} onClick={() => openPointsModal(s)} title="Update Points">🏆</button>
+            <button className="btn-action" style={styles.btnIcon} onClick={() => openEditModal(s)} title="Edit">✏️</button>
+            {role === 'admin' && (
+              <button className="btn-action-delete" style={styles.btnIconDelete} onClick={() => handleDelete(s.id)}>🗑️</button>
+            )}
+          </div>
+        </div>
+        <div style={styles.mobileCardBottom}>
+          <div style={styles.mobileCardStats}>
+            <div style={styles.mobileCardStatItem}>
+              <span style={styles.mobileCardStatLabel}>Level</span>
+              <span style={styles.badge}>{s.level}</span>
+            </div>
+            <div style={styles.mobileCardStatItem}>
+              <span style={styles.mobileCardStatLabel}>Points</span>
+              <span style={{...styles.mobileCardStatValue, color: '#8b5cf6'}}>{s.points}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    ));
+  };
+
   return (
-    <div style={styles.container}>
+    <div style={{...styles.container, ...(isMobile ? {padding: '14px', borderRadius: '12px', marginTop: '12px'} : {})}}>
       <div style={styles.header}>
-        <h2 style={styles.title}>Students Management</h2>
-        <div style={styles.actions}>
-          <button style={styles.btnPrimary} onClick={openAddModal}>+ Add Student</button>
-          <button style={styles.btnSecondary} onClick={() => fileInputRef.current.click()}>
-            Upload CSV
+        <h2 style={{...styles.title, ...(isMobile ? {fontSize: '16px'} : {})}}>Students Management</h2>
+        <div style={{...styles.actions, ...(isMobile ? {gap: '6px'} : {})}}>
+          <button style={{...styles.btnPrimary, ...(isMobile ? {padding: '7px 12px', fontSize: '12px', borderRadius: '8px'} : {})}} onClick={openAddModal}>+ Add</button>
+          <button style={{...styles.btnSecondary, ...(isMobile ? {padding: '7px 12px', fontSize: '12px', borderRadius: '8px'} : {})}} onClick={() => fileInputRef.current.click()}>
+            CSV
           </button>
           <input 
             type="file" 
@@ -241,21 +335,21 @@ export default function StudentsTable() {
       </div>
 
       {/* Filter Bar */}
-      <div style={styles.filterBar}>
-        <div style={styles.filterGroup}>
+      <div style={{ ...styles.filterBar, ...(isMobile ? { flexDirection: 'column', gap: '8px', padding: '10px', borderRadius: '10px', marginBottom: '12px' } : {}) }}>
+        <div style={{ ...styles.filterGroup, ...(isMobile ? { flex: 'unset', width: '100%', borderRadius: '8px' } : {}) }}>
           <span style={styles.filterIcon}>🔍</span>
           <input 
             type="text" 
-            placeholder="Search by Name, Mobile, Father's Name..." 
-            style={styles.searchInput}
+            placeholder="Search by Name, Mobile..." 
+            style={{...styles.searchInput, ...(isMobile ? {padding: '8px 8px', fontSize: '13px'} : {})}}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
-        <div style={styles.filterSelects}>
+        <div style={{...styles.filterSelects, ...(isMobile ? {gap: '6px', width: '100%'} : {})}}>
           {role !== 'teacher' ? (
             <select 
-              style={styles.filterSelect} 
+              style={{...styles.filterSelect, ...(isMobile ? {padding: '8px 10px', fontSize: '12px', borderRadius: '8px', flex: 1} : {})}} 
               value={filterLevel} 
               onChange={(e) => setFilterLevel(e.target.value)}
             >
@@ -271,7 +365,8 @@ export default function StudentsTable() {
             <select 
               style={{
                 ...styles.filterSelect,
-                backgroundColor: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.4)', cursor: 'not-allowed', borderColor: 'transparent', appearance: 'none', WebkitAppearance: 'none'
+                backgroundColor: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.4)', cursor: 'not-allowed', borderColor: 'transparent', appearance: 'none', WebkitAppearance: 'none',
+                ...(isMobile ? {padding: '8px 10px', fontSize: '12px', borderRadius: '8px', flex: 1} : {})
               }}
               value={userLevel} 
               disabled
@@ -280,7 +375,7 @@ export default function StudentsTable() {
             </select>
           )}
           <select 
-            style={styles.filterSelect} 
+            style={{...styles.filterSelect, ...(isMobile ? {padding: '8px 10px', fontSize: '12px', borderRadius: '8px', flex: 1} : {})}} 
             value={filterGender} 
             onChange={(e) => setFilterGender(e.target.value)}
           >
@@ -294,88 +389,95 @@ export default function StudentsTable() {
 
       {error && <div style={styles.error}>{error}</div>}
 
-      <div style={styles.tableWrapper} className="overflow-x-auto w-full">
-        <table style={styles.table}>
-          <thead>
-            <tr>
-              <th style={styles.th}>Roll No</th>
-              <th style={styles.th}>Name</th>
-              <th style={styles.th}>Level</th>
-              <th style={styles.th}>Points</th>
-              <th style={styles.th}>Mobile</th>
-              <th style={styles.th}>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {loading ? (
-              <tr><td colSpan="6" style={styles.empty}>Loading students...</td></tr>
-            ) : students.length === 0 ? (
-              <tr><td colSpan="6" style={styles.empty}>No students found</td></tr>
-            ) : (
-              students.map(s => (
-                <tr key={s.id} style={styles.tr}>
-                  <td style={styles.td}>{s.roll_no}</td>
-                  <td style={styles.td}>{s.name}</td>
-                  <td style={styles.td}>
-                    <span style={styles.badge}>{s.level}</span>
-                  </td>
-                  <td style={styles.td}>
-                    <strong style={{color: '#8b5cf6'}}>{s.points}</strong>
-                  </td>
-                  <td style={styles.td}>{s.mobile}</td>
-                  <td style={styles.td}>
-                    <div style={styles.actionBtns}>
-                      <button style={styles.btnIcon} onClick={() => openDetailsModal(s)} title="View Details">ℹ️</button>
-                      <button style={styles.btnIcon} onClick={() => openPointsModal(s)} title="Update Points">🏆</button>
-                      <button style={styles.btnIcon} onClick={() => openEditModal(s)} title="Edit">✏️</button>
-                      {role === 'admin' && (
-                        <button style={styles.btnIconDelete} onClick={() => handleDelete(s.id)}>🗑️</button>
-                      )}
-                    </div>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-        
-        {/* Pagination Controls */}
-        <div style={styles.paginationBar}>
-          <div style={styles.paginationInfo}>
-            Showing {students.length > 0 ? ((currentPage - 1) * limit) + 1 : 0} to {Math.min(currentPage * limit, totalStudents)} of {totalStudents} students
+      {/* Mobile: Card layout | Desktop: Table layout */}
+      {isMobile ? (
+        <div style={styles.mobileCardList}>
+          {renderMobileCards()}
+        </div>
+      ) : (
+        <div style={styles.tableWrapper}>
+          <table style={styles.table}>
+            <thead>
+              <tr>
+                <th style={styles.th}>Roll No</th>
+                <th style={styles.th}>Name</th>
+                <th style={styles.th}>Level</th>
+                <th style={styles.th}>Points</th>
+                <th style={styles.th}>Mobile</th>
+                <th style={styles.th}>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {loading ? (
+                <SkeletonRows count={limit > 10 ? 10 : limit} columns={6} />
+              ) : students.length === 0 ? (
+                <tr><td colSpan="6" style={styles.empty}>No students found</td></tr>
+              ) : (
+                students.map(s => (
+                  <tr key={s.id} style={styles.tr} className="table-row-hover">
+                    <td style={styles.td}>{s.roll_no}</td>
+                    <td style={styles.td}>{s.name}</td>
+                    <td style={styles.td}>
+                      <span style={styles.badge}>{s.level}</span>
+                    </td>
+                    <td style={styles.td}>
+                      <strong style={{color: '#8b5cf6'}}>{s.points}</strong>
+                    </td>
+                    <td style={styles.td}>{s.mobile}</td>
+                    <td style={styles.td}>
+                      <div style={styles.actionBtns}>
+                        <button className="btn-action" style={styles.btnIcon} onClick={() => openDetailsModal(s)} title="View Details">ℹ️</button>
+                        <button className="btn-action" style={styles.btnIcon} onClick={() => openPointsModal(s)} title="Update Points">🏆</button>
+                        <button className="btn-action" style={styles.btnIcon} onClick={() => openEditModal(s)} title="Edit">✏️</button>
+                        {role === 'admin' && (
+                          <button className="btn-action-delete" style={styles.btnIconDelete} onClick={() => handleDelete(s.id)}>🗑️</button>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      )}
+      
+      {/* Pagination Controls */}
+      <div style={{ ...styles.paginationBar, ...(isMobile ? { flexDirection: 'column', gap: '12px', alignItems: 'stretch' } : {}) }}>
+        <div style={styles.paginationInfo}>
+          Showing {students.length > 0 ? ((currentPage - 1) * limit) + 1 : 0}-{Math.min(currentPage * limit, totalStudents)} of {totalStudents}
+        </div>
+        <div style={{ ...styles.paginationControls, ...(isMobile ? { justifyContent: 'space-between' } : {}) }}>
+          <div style={styles.rowsPerPage}>
+            Rows per page:
+            <select 
+              value={limit} 
+              onChange={(e) => { setLimit(Number(e.target.value)); setCurrentPage(1); }}
+              style={styles.limitSelect}
+            >
+              <option value={10}>10</option>
+              <option value={20}>20</option>
+              <option value={50}>50</option>
+              <option value={100}>100</option>
+              <option value={500}>All</option>
+            </select>
           </div>
-          <div style={styles.paginationControls}>
-            <div style={styles.rowsPerPage}>
-              Rows per page:
-              <select 
-                value={limit} 
-                onChange={(e) => { setLimit(Number(e.target.value)); setCurrentPage(1); }}
-                style={styles.limitSelect}
-              >
-                <option value={10}>10</option>
-                <option value={20}>20</option>
-                <option value={50}>50</option>
-                <option value={100}>100</option>
-                <option value={500}>All</option>
-              </select>
-            </div>
-            <div style={styles.pageButtons}>
-              <button 
-                style={currentPage === 1 ? styles.pageBtnDisabled : styles.pageBtn} 
-                disabled={currentPage === 1}
-                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-              >
-                &lt;
-              </button>
-              <span style={styles.pageInfo}>Page {currentPage} of {totalPages || 1}</span>
-              <button 
-                style={currentPage === totalPages || totalPages === 0 ? styles.pageBtnDisabled : styles.pageBtn} 
-                disabled={currentPage === totalPages || totalPages === 0}
-                onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-              >
-                &gt;
-              </button>
-            </div>
+          <div style={styles.pageButtons}>
+            <button 
+              style={currentPage === 1 ? styles.pageBtnDisabled : styles.pageBtn} 
+              disabled={currentPage === 1}
+              onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+            >
+              &lt;
+            </button>
+            <span style={styles.pageInfo}>Page {currentPage} of {totalPages || 1}</span>
+            <button 
+              style={currentPage === totalPages || totalPages === 0 ? styles.pageBtnDisabled : styles.pageBtn} 
+              disabled={currentPage === totalPages || totalPages === 0}
+              onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+            >
+              &gt;
+            </button>
           </div>
         </div>
       </div>
@@ -384,8 +486,8 @@ export default function StudentsTable() {
       
       {/* Add / Edit Student Modal */}
       {(showAddModal || showEditModal) && (
-        <div style={styles.modalOverlay}>
-          <div style={styles.modal}>
+        <div style={styles.modalOverlay} className="modal-overlay-enter">
+          <div style={styles.modal} className="modal-enter">
             <h3 style={styles.modalTitle}>{showAddModal ? 'Add New Student' : 'Edit Student'}</h3>
             <form onSubmit={showAddModal ? handleAddSubmit : handleEditSubmit} style={styles.formGrid}>
               {showEditModal && (
@@ -450,8 +552,8 @@ export default function StudentsTable() {
 
       {/* Update Points Modal */}
       {showPointsModal && (
-        <div style={styles.modalOverlay}>
-          <div style={styles.modalSmall}>
+        <div style={styles.modalOverlay} className="modal-overlay-enter">
+          <div style={styles.modalSmall} className="modal-enter">
             <h3 style={styles.modalTitle}>Update Points for {currentStudent?.name}</h3>
             <form onSubmit={handlePointsSubmit} style={{display: 'flex', flexDirection: 'column', gap: '15px'}}>
               <div style={styles.formGroup}>

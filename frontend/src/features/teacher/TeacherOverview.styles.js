@@ -2,7 +2,7 @@ const styles = {
   container: { display: 'flex', flexDirection: 'column', gap: '24px', animation: 'fadeIn 0.4s ease' },
   
   headerBanner: { 
-    display: 'flex', justifyContent: 'space-between', alignItems: 'center', 
+    display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px',
     background: 'rgba(255, 255, 255, 0.02)', border: '1px solid rgba(255, 255, 255, 0.04)', 
     borderRadius: '16px', padding: '20px 24px' 
   },
@@ -16,7 +16,11 @@ const styles = {
   timeDivider: { color: 'rgba(255,255,255,0.2)', fontSize: '12px' },
   timeText: { color: '#818cf8', fontSize: '14px', fontWeight: 700, fontFamily: 'monospace' },
   
-  kpiGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px' },
+  kpiGrid: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 140px), 1fr))',
+    gap: '16px',
+  },
   kpiCard: { 
     background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.04)', 
     borderRadius: '16px', padding: '20px', display: 'flex', flexDirection: 'column', gap: '12px',
@@ -28,7 +32,7 @@ const styles = {
   kpiValue: { color: 'white', fontSize: '28px', fontWeight: 700, display: 'flex', alignItems: 'baseline', gap: '4px' },
   kpiSuffix: { color: 'rgba(255,255,255,0.3)', fontSize: '13px', fontWeight: 500 },
 
-  mainGrid: { display: 'grid', gridTemplateColumns: '1fr 1.5fr', gap: '24px' },
+  mainGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 320px), 1fr))', gap: '24px' },
   panelCard: { 
     background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.04)', 
     borderRadius: '20px', padding: '24px', display: 'flex', flexDirection: 'column',

@@ -1,8 +1,39 @@
 import React, { useState, useEffect } from 'react';
 import styles from './ActivityLogs.styles';
+import useIsMobile from '../../hooks/useIsMobile';
+
+// Skeleton loading
+const SkeletonRows = ({ count = 5 }) => (
+  <>
+    {Array.from({ length: count }).map((_, i) => (
+      <tr key={`skeleton-${i}`} className="skeleton-row">
+        {Array.from({ length: 4 }).map((_, j) => (
+          <td key={j} style={styles.td}>
+            <div className="skeleton-cell" style={{ width: j === 3 ? '180px' : j === 0 ? '100px' : '80px', height: '14px' }}></div>
+          </td>
+        ))}
+      </tr>
+    ))}
+  </>
+);
+
+const MobileSkeletonCards = ({ count = 4 }) => (
+  <>
+    {Array.from({ length: count }).map((_, i) => (
+      <div key={`mskel-${i}`} style={styles.mobileCard}>
+        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+          <div className="skeleton-cell" style={{ width: '80px', height: '14px' }}></div>
+          <div className="skeleton-cell" style={{ width: '60px', height: '10px' }}></div>
+        </div>
+        <div className="skeleton-cell" style={{ width: '100%', height: '12px', marginTop: '8px' }}></div>
+      </div>
+    ))}
+  </>
+);
 
 export default function ActivityLogs() {
-  const [logs, setLogs] = useState([]);
+  const isMobile = useIsMobile();
+  const [allLogs, setAllLogs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   
@@ -10,12 +41,21 @@ export default function ActivityLogs() {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterAction, setFilterAction] = useState('All');
 
+  // Client-side pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [limit, setLimit] = useState(20);
+
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
       fetchLogs();
     }, 300);
     return () => clearTimeout(delayDebounceFn);
   }, [searchTerm, filterAction]);
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, filterAction, limit]);
 
   const fetchLogs = async () => {
     try {
@@ -31,7 +71,7 @@ export default function ActivityLogs() {
       });
       const data = await res.json();
       if (data.success) {
-        setLogs(data.data);
+        setAllLogs(data.data);
       } else {
         setError(data.message);
       }
@@ -78,42 +118,99 @@ export default function ActivityLogs() {
     return '#a78bfa';
   };
 
-  if (loading) return <div style={styles.loading}>Loading activity logs...</div>;
+  // Client-side pagination
+  const totalLogs = allLogs.length;
+  const totalPages = Math.ceil(totalLogs / limit) || 1;
+  const paginatedLogs = allLogs.slice((currentPage - 1) * limit, currentPage * limit);
+
+  // Mobile card renderer
+  const renderMobileCards = () => {
+    if (paginatedLogs.length === 0) {
+      return <div style={styles.empty}>No activity recorded yet</div>;
+    }
+    return paginatedLogs.map(log => (
+      <div key={log.id} className="mobile-card" style={styles.mobileCard}>
+        <div style={styles.mobileCardHeader}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+            <span style={styles.userName}>{log.user_name}</span>
+            <span style={styles.userRole}>{log.role}</span>
+          </div>
+          <span style={styles.mobileCardTime}>{formatDate(log.timestamp)}</span>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <span style={{
+            ...styles.badge, 
+            color: getActionColor(log.action_type),
+            background: `${getActionColor(log.action_type)}20`
+          }}>
+            {log.action_type.split('_').join(' ')}
+          </span>
+        </div>
+        <div style={{ color: 'rgba(255,255,255,0.6)', fontSize: '11px', lineHeight: '1.4' }}>
+          {log.details}
+        </div>
+      </div>
+    ));
+  };
+
+  if (loading) {
+    return (
+      <div style={styles.container}>
+        <div style={styles.header}>
+          <h2 style={styles.title}>System Activity Logs</h2>
+        </div>
+        {isMobile ? (
+          <MobileSkeletonCards count={6} />
+        ) : (
+          <div style={styles.tableWrapper}>
+            <table style={styles.table}>
+              <thead>
+                <tr>
+                  <th style={styles.th}>Timestamp</th>
+                  <th style={styles.th}>User</th>
+                  <th style={styles.th}>Action</th>
+                  <th style={styles.th}>Description</th>
+                </tr>
+              </thead>
+              <tbody>
+                <SkeletonRows count={8} />
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+    );
+  }
 
   return (
-    <div style={styles.container}>
-      <div style={styles.header}>
-        <h2 style={styles.title}>System Activity Logs</h2>
-        <div style={{display: 'flex', gap: '10px'}}>
-          <button style={styles.btnDanger} onClick={handleClearLogs}>
-            <span style={{ fontSize: '14px' }}>🗑️</span> Clear Logs
+    <div style={{...styles.container, ...(isMobile ? {padding: '14px', borderRadius: '12px', marginTop: '12px'} : {})}}>
+      <div style={{...styles.header, ...(isMobile ? {marginBottom: '12px', gap: '8px'} : {})}}>
+        <h2 style={{...styles.title, ...(isMobile ? {fontSize: '16px'} : {})}}>Activity Logs</h2>
+        <div style={{display: 'flex', gap: isMobile ? '6px' : '10px', flexWrap: 'wrap'}}>
+          <button className="btn-action-delete" style={{...styles.btnDanger, ...(isMobile ? {padding: '6px 10px', fontSize: '11px', borderRadius: '8px'} : {})}} onClick={handleClearLogs}>
+            🗑️ {isMobile ? 'Clear' : 'Clear Logs'}
           </button>
-          <button style={styles.btnRefresh} onClick={fetchLogs}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-              <polyline points="23 4 23 10 17 10"></polyline>
-              <polyline points="1 20 1 14 7 14"></polyline>
-              <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
-            </svg>
-            Refresh
+          <button className="btn-action" style={{...styles.btnRefresh, ...(isMobile ? {padding: '6px 10px', fontSize: '11px', borderRadius: '8px'} : {})}} onClick={fetchLogs}>
+            ↻ {isMobile ? '' : 'Refresh'}
           </button>
         </div>
       </div>
 
       {/* Filter Bar */}
-      <div style={styles.filterBar}>
-        <div style={styles.filterGroup}>
+      <div style={{ ...styles.filterBar, ...(isMobile ? { flexDirection: 'column', gap: '8px', padding: '10px', borderRadius: '10px', marginBottom: '12px' } : {}) }}>
+        <div style={{ ...styles.filterGroup, ...(isMobile ? { flex: 'unset', width: '100%', borderRadius: '8px' } : {}) }}>
           <span style={styles.filterIcon}>🔍</span>
           <input 
             type="text" 
-            placeholder="Search by User Name or Action Details..." 
-            style={styles.searchInput}
+            placeholder={isMobile ? 'Search...' : 'Search by User Name or Action Details...'}
+            style={{...styles.searchInput, ...(isMobile ? {padding: '8px 8px', fontSize: '13px'} : {})}}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
-        <div style={styles.filterSelects}>
+        <div style={{...styles.filterSelects, ...(isMobile ? {width: '100%'} : {})}}>
           <select 
-            style={styles.filterSelect} 
+            style={{...styles.filterSelect, ...(isMobile ? {padding: '8px 10px', fontSize: '12px', borderRadius: '8px', flex: 1} : {})}}
             value={filterAction} 
             onChange={(e) => setFilterAction(e.target.value)}
           >
@@ -132,45 +229,92 @@ export default function ActivityLogs() {
 
       {error && <div style={styles.error}>{error}</div>}
 
-      <div style={styles.tableWrapper} className="overflow-x-auto w-full">
-        <table style={styles.table}>
-          <thead>
-            <tr>
-              <th style={styles.th}>Timestamp</th>
-              <th style={styles.th}>User</th>
-              <th style={styles.th}>Action</th>
-              <th style={styles.th}>Description</th>
-            </tr>
-          </thead>
-          <tbody>
-            {logs.length === 0 ? (
-              <tr><td colSpan="4" style={styles.empty}>No activity recorded yet</td></tr>
-            ) : (
-              logs.map(log => (
-                <tr key={log.id} style={styles.tr}>
-                  <td style={styles.tdTime}>{formatDate(log.timestamp)}</td>
-                  <td style={styles.td}>
-                    <div style={{ display: 'flex', flexDirection: 'column' }}>
-                      <span style={styles.userName}>{log.user_name}</span>
-                      <span style={styles.userRole}>{log.role}</span>
-                    </div>
-                  </td>
-                  <td style={styles.td}>
-                    <span style={{
-                      ...styles.badge, 
-                      color: getActionColor(log.action_type),
-                      background: `${getActionColor(log.action_type)}20`
-                    }}>
-                      {log.action_type.replace('_', ' ')}
-                    </span>
-                  </td>
-                  <td style={styles.tdDesc}>{log.details}</td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
+      {/* Mobile: Card layout | Desktop: Table layout */}
+      {isMobile ? (
+        <div style={styles.mobileCardList}>
+          {renderMobileCards()}
+        </div>
+      ) : (
+        <div style={styles.tableWrapper}>
+          <table style={styles.table}>
+            <thead>
+              <tr>
+                <th style={styles.th}>Timestamp</th>
+                <th style={styles.th}>User</th>
+                <th style={styles.th}>Action</th>
+                <th style={styles.th}>Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              {paginatedLogs.length === 0 ? (
+                <tr><td colSpan="4" style={styles.empty}>No activity recorded yet</td></tr>
+              ) : (
+                paginatedLogs.map(log => (
+                  <tr key={log.id} style={styles.tr} className="table-row-hover">
+                    <td style={styles.tdTime}>{formatDate(log.timestamp)}</td>
+                    <td style={styles.td}>
+                      <div style={{ display: 'flex', flexDirection: 'column' }}>
+                        <span style={styles.userName}>{log.user_name}</span>
+                        <span style={styles.userRole}>{log.role}</span>
+                      </div>
+                    </td>
+                    <td style={styles.td}>
+                      <span style={{
+                        ...styles.badge, 
+                        color: getActionColor(log.action_type),
+                        background: `${getActionColor(log.action_type)}20`
+                      }}>
+                        {log.action_type.split('_').join(' ')}
+                      </span>
+                    </td>
+                    <td style={styles.tdDesc}>{log.details}</td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {/* Pagination Controls */}
+      {totalLogs > 0 && (
+        <div style={{ ...styles.paginationBar, ...(isMobile ? { flexDirection: 'column', gap: '8px', alignItems: 'stretch', padding: '10px' } : {}) }}>
+          <div style={{...styles.paginationInfo, ...(isMobile ? {fontSize: '12px'} : {})}}>
+            {((currentPage - 1) * limit) + 1}–{Math.min(currentPage * limit, totalLogs)} of {totalLogs}
+          </div>
+          <div style={{ ...styles.paginationControls, ...(isMobile ? { justifyContent: 'space-between' } : {}) }}>
+            <div style={{...styles.rowsPerPage, ...(isMobile ? {fontSize: '12px', gap: '4px'} : {})}}>
+              Per page:
+              <select 
+                value={limit} 
+                onChange={(e) => { setLimit(Number(e.target.value)); setCurrentPage(1); }}
+                style={{...styles.limitSelect, ...(isMobile ? {padding: '3px 6px', fontSize: '12px'} : {})}}
+              >
+                <option value={10}>10</option>
+                <option value={20}>20</option>
+                <option value={50}>50</option>
+              </select>
+            </div>
+            <div style={{...styles.pageButtons, ...(isMobile ? {gap: '8px'} : {})}}>
+              <button 
+                style={{...(currentPage === 1 ? styles.pageBtnDisabled : styles.pageBtn), ...(isMobile ? {width: '28px', height: '28px', fontSize: '12px', borderRadius: '7px'} : {})}}
+                disabled={currentPage === 1}
+                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+              >
+                &lt;
+              </button>
+              <span style={{...styles.pageInfo, ...(isMobile ? {fontSize: '12px'} : {})}}>{currentPage}/{totalPages}</span>
+              <button 
+                style={{...(currentPage === totalPages ? styles.pageBtnDisabled : styles.pageBtn), ...(isMobile ? {width: '28px', height: '28px', fontSize: '12px', borderRadius: '7px'} : {})}}
+                disabled={currentPage === totalPages}
+                onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+              >
+                &gt;
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import styles from './AttendanceReport.styles';
+import useIsMobile from '../../hooks/useIsMobile';
 
 export default function AttendanceReport() {
+  const isMobile = useIsMobile();
   const role = localStorage.getItem('userRole') || 'teacher';
   const assignedLevel = localStorage.getItem('userLevel') || '';
   const token = localStorage.getItem('token');
@@ -125,11 +127,11 @@ export default function AttendanceReport() {
   if (selectedDay) {
     return (
       <div style={styles.container}>
-        <div style={styles.detailsHeader}>
+      <div style={{ ...styles.detailsHeader, ...(isMobile ? { flexDirection: 'column', alignItems: 'flex-start', gap: '12px' } : {}) }}>
           <button style={styles.backButton} onClick={() => setSelectedDay(null)}>
             ← Back to Grid
           </button>
-          <h2 style={styles.detailsDate}>Attendance for {selectedDay}</h2>
+          <h2 style={{ ...styles.detailsDate, ...(isMobile ? { fontSize: '16px' } : {}) }}>Attendance for {selectedDay}</h2>
         </div>
         
         {loadingDetail ? (
@@ -138,9 +140,9 @@ export default function AttendanceReport() {
           <div style={{color: '#fff'}}>No students found.</div>
         ) : (
           <div style={{ position: 'relative' }}>
-            <div style={styles.studentGrid}>
+            <div style={{ ...styles.studentGrid, ...(isMobile ? { gridTemplateColumns: '1fr' } : {}) }} className="stagger-children">
               {detailData.map(student => (
-                <div key={student.id} style={styles.studentRow}>
+                <div key={student.id} style={{ ...styles.studentRow, ...(isMobile ? { flexDirection: 'column', alignItems: 'stretch', gap: '12px' } : {}) }}>
                   <div style={styles.studentInfo}>
                     <div style={styles.studentAvatar}>{student.name.charAt(0).toUpperCase()}</div>
                     <div>
@@ -167,9 +169,35 @@ export default function AttendanceReport() {
               ))}
             </div>
             
-            <div style={styles.floatingSaveBar}>
-              <button onClick={saveAttendance} disabled={savingAttendance} style={styles.saveBtn}>
-                {savingAttendance ? 'Saving...' : '💾 Save Updates'}
+            <div style={{ 
+              ...styles.floatingSaveBar, 
+              ...(isMobile ? { 
+                position: 'fixed', 
+                bottom: '72px', 
+                right: '16px',
+                left: 'auto',
+                marginTop: 0,
+                background: 'none',
+                border: 'none',
+                backdropFilter: 'none',
+                WebkitBackdropFilter: 'none',
+                padding: 0,
+                borderRadius: 0,
+                zIndex: 100,
+              } : {}) 
+            }}>
+              <button onClick={saveAttendance} disabled={savingAttendance} style={{
+                ...styles.saveBtn,
+                ...(isMobile ? { 
+                  borderRadius: '50px', 
+                  padding: '10px 16px',
+                  fontSize: '13px',
+                  fontWeight: 700,
+                  boxShadow: '0 6px 20px rgba(99, 102, 241, 0.45)',
+                  background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
+                } : {})
+              }}>
+                {savingAttendance ? 'Saving...' : '💾 Save'}
               </button>
             </div>
           </div>
@@ -190,7 +218,7 @@ export default function AttendanceReport() {
 
   return (
     <div style={styles.container}>
-      <div style={styles.headerRow}>
+      <div style={{ ...styles.headerRow, ...(isMobile ? { flexDirection: 'column', gap: '12px' } : {}) }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
           <h2 style={styles.title}>Shivir 2026 Attendance</h2>
         </div>
@@ -219,7 +247,7 @@ export default function AttendanceReport() {
       {loadingSummary ? (
         <div style={{color: '#fff', textAlign: 'center', padding: '40px'}}>Loading...</div>
       ) : (
-        <div style={styles.calendarGrid}>
+        <div style={{ ...styles.calendarGrid, ...(isMobile ? { gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px' } : {}) }} className="stagger-children">
           {shivirDates.map(({ dateStr, display }) => {
             const stats = summaryData[dateStr] || { Present: 0, Absent: 0, Unmarked: totalStudentsInLevel };
             
@@ -237,6 +265,7 @@ export default function AttendanceReport() {
               <div 
                 key={dateStr} 
                 style={styles.dayCell}
+                className="card-hover"
                 onClick={() => setSelectedDay(dateStr)}
               >
                 <div style={styles.dayNumber}>{display}</div>

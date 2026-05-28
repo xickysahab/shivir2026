@@ -71,7 +71,7 @@ export default function TeacherOverview() {
       </div>
 
       {/* KPI Cards Row */}
-      <div style={styles.kpiGrid}>
+      <div style={styles.kpiGrid} className="stagger-children">
         <div style={styles.kpiCard}>
           <div style={styles.kpiHeader}>
             <span style={styles.kpiLabel}>Total Students</span>
@@ -103,7 +103,7 @@ export default function TeacherOverview() {
       </div>
 
       {/* Main Content Area */}
-      <div style={{ ...styles.mainGrid, display: 'flex', flexDirection: 'column', gap: '24px' }}>
+      <div style={styles.mainGrid}>
         {/* Left: Demographics Donut */}
         <div style={styles.panelCard}>
           <div style={styles.panelHeader}>

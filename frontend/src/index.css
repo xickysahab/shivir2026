@@ -79,6 +79,10 @@
   padding: 0;
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 body {
   margin: 0;
   min-height: 100vh;
@@ -173,23 +177,306 @@ a:hover {
   to { opacity: 1; transform: translateX(-50%) translateY(0); }
 }
 
+/* New: Smooth fade-slide for tab content switching */
+@keyframes fadeSlideIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* New: Modal entrance */
+@keyframes modalEnter {
+  from { opacity: 0; transform: scale(0.92) translateY(16px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+/* New: Modal overlay fade */
+@keyframes overlayFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* New: Toast slide up from bottom */
+@keyframes toastSlideUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Interactive Utility Classes ── */
+
+/* Table row hover — since inline styles can't handle :hover */
+.table-row-hover:hover {
+  background: rgba(99, 102, 241, 0.06) !important;
+}
+
+/* Card hover — for stat cards, day cells, chart cards, etc. */
+.card-hover {
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.card-hover:hover {
+  background: rgba(99, 102, 241, 0.08) !important;
+  border-color: rgba(99, 102, 241, 0.25) !important;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+}
+
+/* Action button hover */
+.btn-action:hover {
+  background: rgba(255, 255, 255, 0.1) !important;
+  border-radius: 8px;
+  transform: scale(1.15);
+}
+.btn-action {
+  transition: all 0.2s ease;
+}
+
+/* Delete button hover */
+.btn-action-delete:hover {
+  background: rgba(239, 68, 68, 0.15) !important;
+  border-radius: 8px;
+  transform: scale(1.15);
+}
+.btn-action-delete {
+  transition: all 0.2s ease;
+}
+
+/* Sidebar nav item hover */
+.nav-item-hover {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+.nav-item-hover:hover {
+  background: rgba(255, 255, 255, 0.06) !important;
+  color: rgba(255, 255, 255, 0.85) !important;
+}
+
+/* Skeleton shimmer loading */
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.04) 25%,
+    rgba(255, 255, 255, 0.08) 50%,
+    rgba(255, 255, 255, 0.04) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite ease-in-out;
+  border-radius: 8px;
+}
+
+.skeleton-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+}
+
+.skeleton-cell {
+  height: 16px;
+  border-radius: 6px;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.04) 25%,
+    rgba(255, 255, 255, 0.08) 50%,
+    rgba(255, 255, 255, 0.04) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite ease-in-out;
+}
+
+/* Fade-in-up entrance animation */
+.fade-in-up {
+  animation: slideUp 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Smooth tab content transition */
+.tab-content-fade {
+  animation: fadeSlideIn 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+/* Staggered children animation */
+.stagger-children > * {
+  animation: slideUp 0.4s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+.stagger-children > *:nth-child(1) { animation-delay: 0s; }
+.stagger-children > *:nth-child(2) { animation-delay: 0.05s; }
+.stagger-children > *:nth-child(3) { animation-delay: 0.06s; }
+.stagger-children > *:nth-child(4) { animation-delay: 0.08s; }
+.stagger-children > *:nth-child(5) { animation-delay: 0.1s; }
+.stagger-children > *:nth-child(6) { animation-delay: 0.12s; }
+.stagger-children > *:nth-child(7) { animation-delay: 0.14s; }
+.stagger-children > *:nth-child(8) { animation-delay: 0.16s; }
+
+/* Mobile card layout for tables */
+.mobile-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 14px;
+  padding: 16px;
+  transition: all 0.2s ease;
+}
+.mobile-card:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(99, 102, 241, 0.2);
+}
+
 /* ── Scrollbar ── */
 ::-webkit-scrollbar {
   width: 6px;
+  height: 6px;
 }
 ::-webkit-scrollbar-track {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.08);
   border-radius: 3px;
+  transition: background 0.2s;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.18);
 }
 
 /* ── Selection ── */
 ::selection {
   background: rgba(99, 102, 241, 0.3);
   color: var(--text-heading);
+}
+
+/* ── Smooth Scroll Container ── */
+.smooth-scroll {
+  scroll-behavior: smooth;
+  scrollbar-gutter: stable;
+}
+
+/* ── Mobile Responsive ── */
+@media (max-width: 768px) {
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+  
+  h1 { font-size: 1.5rem; }
+  h2 { font-size: 1.25rem; }
+  h3 { font-size: 1.1rem; }
+  
+  /* Ensure tables scroll horizontally */
+  table {
+    min-width: 600px;
+  }
+
+  /* Remove tap highlight on mobile */
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Smooth momentum scrolling */
+  .mobile-scroll {
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-y: contain;
+  }
+
+  /* Improve card hover for touch — use active instead */
+  .card-hover:active {
+    transform: scale(0.97) !important;
+    opacity: 0.9;
+  }
+  .card-hover:hover {
+    transform: none !important;
+    box-shadow: none !important;
+  }
+
+  .mobile-card:active {
+    transform: scale(0.97);
+    opacity: 0.9;
+  }
+
+  .btn-action:active {
+    transform: scale(1.2) !important;
+    background: rgba(255, 255, 255, 0.15) !important;
+  }
+
+  /* Better skeleton on mobile */
+  .skeleton-row {
+    padding: 12px;
+  }
+
+  /* Disable sidebar hover on mobile */
+  .nav-item-hover:hover {
+    background: transparent !important;
+  }
+  .nav-item-hover:active {
+    background: rgba(255, 255, 255, 0.08) !important;
+  }
+}
+
+/* ── Smooth Page Transition ── */
+@keyframes pageSlideIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.page-transition {
+  animation: pageSlideIn 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+/* ── Premium Bottom Nav ── */
+.bottom-nav-item {
+  position: relative;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.bottom-nav-item::after {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: 50%;
+  transform: translateX(-50%) scaleX(0);
+  width: 20px;
+  height: 3px;
+  background: linear-gradient(90deg, #6366f1, #a78bfa);
+  border-radius: 0 0 4px 4px;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.bottom-nav-item.active::after {
+  transform: translateX(-50%) scaleX(1);
+}
+.bottom-nav-item:active {
+  transform: scale(0.9);
+}
+
+/* ── Glass Morphism Top Bar ── */
+.glass-bar {
+  background: rgba(15, 15, 25, 0.75) !important;
+  backdrop-filter: blur(24px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(24px) saturate(180%) !important;
+}
+
+/* ── Smooth Content Fade ── */
+@keyframes contentFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.content-fade {
+  animation: contentFadeIn 0.25s ease;
+}
+
+/* ── Modal Animations ── */
+.modal-overlay-enter {
+  animation: overlayFadeIn 0.25s ease;
+}
+
+.modal-enter {
+  animation: modalEnter 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ── Toast Animation ── */
+.toast-animate {
+  animation: toastSlideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ── Input Focus Ring (CSS-only, replaces JS onFocus/onBlur) ── */
+.input-focus-ring {
+  transition: border-color 0.25s ease, box-shadow 0.25s ease;
+}
+.input-focus-ring:focus-within {
+  border-color: rgba(99, 102, 241, 0.5) !important;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1) !important;
 }

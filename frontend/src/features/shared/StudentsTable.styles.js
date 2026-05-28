@@ -1,25 +1,25 @@
 const styles = {
   container: { padding: '20px', background: 'rgba(255,255,255,0.02)', borderRadius: '16px', marginTop: '20px' },
-  header: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' },
+  header: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px', flexWrap: 'wrap', gap: '12px' },
   title: { color: 'white', margin: 0, fontSize: '20px' },
-  actions: { display: 'flex', gap: '10px' },
-  btnPrimary: { background: 'linear-gradient(135deg, #6366f1, #8b5cf6)', color: 'white', border: 'none', padding: '10px 16px', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' },
-  btnSecondary: { background: 'rgba(255,255,255,0.1)', color: 'white', border: '1px solid rgba(255,255,255,0.2)', padding: '10px 16px', borderRadius: '8px', cursor: 'pointer' },
-  filterBar: { display: 'flex', gap: '15px', padding: '15px', background: 'rgba(0,0,0,0.2)', borderRadius: '12px', marginBottom: '20px', alignItems: 'center' },
+  actions: { display: 'flex', gap: '10px', flexWrap: 'wrap' },
+  btnPrimary: { background: 'linear-gradient(135deg, #6366f1, #8b5cf6)', color: 'white', border: 'none', padding: '10px 16px', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', transition: 'all 0.2s', boxShadow: '0 4px 12px rgba(99, 102, 241, 0.25)' },
+  btnSecondary: { background: 'rgba(255,255,255,0.1)', color: 'white', border: '1px solid rgba(255,255,255,0.2)', padding: '10px 16px', borderRadius: '8px', cursor: 'pointer', transition: 'all 0.2s' },
+  filterBar: { display: 'flex', gap: '15px', padding: '15px', background: 'rgba(0,0,0,0.2)', borderRadius: '12px', marginBottom: '20px', alignItems: 'center', flexWrap: 'wrap' },
   filterGroup: { flex: '1 1 300px', display: 'flex', alignItems: 'center', background: 'rgba(255,255,255,0.05)', borderRadius: '8px', padding: '0 10px', border: '1px solid rgba(255,255,255,0.1)' },
   filterIcon: { color: 'rgba(255,255,255,0.4)', fontSize: '14px' },
-  searchInput: { background: 'transparent', border: 'none', color: 'white', padding: '12px 10px', width: '100%', outline: 'none' },
-  filterSelects: { display: 'flex', gap: '10px' },
+  searchInput: { background: 'transparent', border: 'none', color: 'white', padding: '12px 10px', width: '100%', outline: 'none', fontSize: '14px' },
+  filterSelects: { display: 'flex', gap: '10px', flexWrap: 'wrap' },
   filterSelect: { background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'white', padding: '10px 15px', borderRadius: '8px', outline: 'none', cursor: 'pointer' },
   tableWrapper: { overflowX: 'auto', background: 'rgba(0,0,0,0.2)', borderRadius: '12px' },
   table: { width: '100%', borderCollapse: 'collapse', textAlign: 'left', color: '#eee' },
-  th: { padding: '16px', borderBottom: '1px solid rgba(255,255,255,0.1)', fontWeight: 600, color: '#a78bfa' },
+  th: { padding: '16px', borderBottom: '1px solid rgba(255,255,255,0.1)', fontWeight: 600, color: '#a78bfa', fontSize: '13px', textTransform: 'uppercase', letterSpacing: '0.5px' },
   td: { padding: '16px', borderBottom: '1px solid rgba(255,255,255,0.05)' },
   tr: { transition: 'background 0.2s' },
-  badge: { background: 'rgba(99,102,241,0.2)', color: '#818cf8', padding: '4px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: 'bold' },
-  actionBtns: { display: 'flex', gap: '8px' },
-  btnIcon: { background: 'transparent', border: 'none', cursor: 'pointer', fontSize: '16px', padding: '4px', opacity: 0.8 },
-  btnIconDelete: { background: 'transparent', border: 'none', cursor: 'pointer', fontSize: '16px', padding: '4px', opacity: 0.8 },
+  badge: { background: 'rgba(99,102,241,0.2)', color: '#818cf8', padding: '4px 10px', borderRadius: '6px', fontSize: '12px', fontWeight: 'bold' },
+  actionBtns: { display: 'flex', gap: '4px' },
+  btnIcon: { background: 'transparent', border: 'none', cursor: 'pointer', fontSize: '16px', padding: '6px', opacity: 0.8, borderRadius: '8px' },
+  btnIconDelete: { background: 'transparent', border: 'none', cursor: 'pointer', fontSize: '16px', padding: '6px', opacity: 0.8, borderRadius: '8px' },
   
   // Pagination UI Styles
   paginationBar: {
@@ -36,8 +36,7 @@ const styles = {
   paginationControls: {
     display: 'flex',
     alignItems: 'center',
-    gap: '24px',
-    gap: '6px'
+    gap: '16px'
   },
   rowsPerPage: {
     display: 'flex',
@@ -91,6 +90,85 @@ const styles = {
     color: 'rgba(255,255,255,0.8)',
     fontSize: '14px',
     fontWeight: 500
+  },
+
+  // Mobile card layout
+  mobileCardList: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '12px',
+  },
+  mobileCard: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '8px',
+    padding: '12px',
+    background: 'rgba(255,255,255,0.03)',
+    border: '1px solid rgba(255,255,255,0.06)',
+    borderRadius: '12px',
+    transition: 'all 0.2s',
+  },
+  mobileCardTop: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+  },
+  mobileCardInfo: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '10px',
+    flex: 1,
+  },
+  mobileCardAvatar: {
+    width: '34px',
+    height: '34px',
+    borderRadius: '50%',
+    background: 'rgba(99, 102, 241, 0.2)',
+    color: '#a78bfa',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    fontWeight: 'bold',
+    fontSize: '14px',
+    flexShrink: 0,
+  },
+  mobileCardName: {
+    color: 'white',
+    fontSize: '13px',
+    fontWeight: 600,
+  },
+  mobileCardMeta: {
+    color: 'rgba(255,255,255,0.4)',
+    fontSize: '12px',
+    marginTop: '2px',
+  },
+  mobileCardBottom: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingTop: '8px',
+    borderTop: '1px solid rgba(255,255,255,0.05)',
+  },
+  mobileCardStats: {
+    display: 'flex',
+    gap: '12px',
+    alignItems: 'center',
+  },
+  mobileCardStatItem: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '2px',
+  },
+  mobileCardStatLabel: {
+    color: 'rgba(255,255,255,0.4)',
+    fontSize: '10px',
+    fontWeight: 600,
+    textTransform: 'uppercase',
+  },
+  mobileCardStatValue: {
+    color: 'white',
+    fontSize: '14px',
+    fontWeight: 600,
   },
 
   modalOverlay: { position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000, backdropFilter: 'blur(4px)', padding: '16px' },

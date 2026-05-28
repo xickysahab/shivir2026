@@ -133,9 +133,9 @@ export default function MentorOverview() {
             {chartData.length === 0 ? (
               <div style={styles.empty}>No attendance data found for this date.</div>
             ) : (
-              <div style={styles.chartsGrid}>
+              <div style={styles.chartsGrid} className="stagger-children">
                 {chartData.map((item, idx) => (
-                  <div key={idx} style={styles.chartCard}>
+                  <div key={idx} style={styles.chartCard} className="card-hover">
                     <h3 style={styles.chartTitle}>{item.level}</h3>
                     <div style={styles.chartMeta}>
                       Total: {item.stats.total} | 

@@ -6,10 +6,12 @@ import MentorsTable from './MentorsTable';
 import Analytics from './Analytics';
 import ActivityLogs from './ActivityLogs';
 import AttendanceReport from '../shared/AttendanceReport';
+import useIsMobile from '../../hooks/useIsMobile';
 import styles from './AdminDashboard.styles';
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
   const [activeTab, setActiveTab] = useState('analytics');
   const [showModal, setShowModal] = useState(false);
   const [toast, setToast] = useState({ message: '', type: '' });
@@ -30,6 +32,105 @@ export default function AdminDashboard() {
     localStorage.clear();
     navigate('/');
   };
+
+  const navTabs = [
+    { key: 'analytics', icon: '📊', label: 'Analytics' },
+    { key: 'students', icon: '🎓', label: 'Students' },
+    { key: 'mentors', icon: '👨‍🏫', label: 'Mentors' },
+    { key: 'logs', icon: '🕒', label: 'Logs' },
+    { key: 'report', icon: '📜', label: 'Report' }
+  ];
+
+  const pageTitles = {
+    analytics: 'Dashboard Overview',
+    students: 'Students Directory',
+    mentors: 'Teachers & Mentors',
+    logs: 'System Activity Logs',
+    report: 'Attendance Report & History'
+  };
+
+  const renderContent = () => (
+    <>
+      {activeTab === 'analytics' && <Analytics />}
+      {activeTab === 'students' && <StudentsTable />}
+      {activeTab === 'mentors' && <MentorsTable />}
+      {activeTab === 'logs' && <ActivityLogs />}
+      {activeTab === 'report' && <AttendanceReport />}
+    </>
+  );
+
+  if (isMobile) {
+    return (
+      <div style={styles.page}>
+        <div style={styles.orb1}></div>
+        <div style={styles.orb2}></div>
+
+        <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', position: 'relative', zIndex: 10 }}>
+          {/* Mobile Top Bar */}
+          <div style={styles.mobileTopBar} className="glass-bar">
+            <div style={styles.mobileTopBarLeft}>
+              <svg width="24" height="24" viewBox="0 0 28 28" fill="none">
+                <defs>
+                  <linearGradient id="navLogoGradM" x1="0" y1="0" x2="28" y2="28">
+                    <stop offset="0%" stopColor="#6366f1" />
+                    <stop offset="100%" stopColor="#a78bfa" />
+                  </linearGradient>
+                </defs>
+                <rect width="28" height="28" rx="8" fill="url(#navLogoGradM)" />
+                <text x="14" y="19" textAnchor="middle" fill="white" fontSize="14" fontWeight="800" fontFamily="Inter, sans-serif">S</text>
+              </svg>
+              <h2 style={styles.mobileTopBarTitle}>Shivir 2026</h2>
+              <span style={{ fontSize: '10px', fontWeight: 700, color: '#818cf8', textTransform: 'uppercase', background: 'rgba(99,102,241,0.12)', padding: '3px 8px', borderRadius: '8px' }}>Admin</span>
+            </div>
+            <button onClick={handleLogout} style={styles.mobileLogoutBtn}>
+              Logout
+            </button>
+          </div>
+
+          {/* Mobile Content */}
+          <div style={styles.mobileContentArea} className="mobile-scroll">
+            <header style={styles.mobileMainHeader}>
+              <h1 style={styles.mobilePageTitle}>{pageTitles[activeTab]}</h1>
+            </header>
+            <div key={activeTab} className="tab-content-fade">
+              {renderContent()}
+            </div>
+          </div>
+
+          {/* Bottom Nav */}
+          <nav style={styles.bottomNav}>
+            {navTabs.map(tab => (
+              <button
+                key={tab.key}
+                className={`bottom-nav-item${activeTab === tab.key ? ' active' : ''}`}
+                style={activeTab === tab.key ? styles.bottomNavItemActive : styles.bottomNavItem}
+                onClick={() => setActiveTab(tab.key)}
+              >
+                <span style={{ fontSize: '18px' }}>{tab.icon}</span>
+                {tab.label}
+              </button>
+            ))}
+          </nav>
+        </div>
+
+        {toast.message && (
+          <div className="toast-animate" style={{
+            ...(toast.type === 'error' ? styles.toastError : styles.toastSuccess),
+            ...(isMobile ? { bottom: '72px', right: '16px', left: '16px', padding: '10px 16px', fontSize: '13px', borderRadius: '12px', gap: '8px' } : {})
+          }}>
+            {toast.message}
+          </div>
+        )}
+
+        {showModal && (
+          <CreateUserModal
+            onClose={() => setShowModal(false)}
+            onSuccess={handleUserCreated}
+          />
+        )}
+      </div>
+    );
+  }
 
   return (
     <div style={styles.page}>
@@ -58,21 +159,16 @@ export default function AdminDashboard() {
           </div>
 
           <div style={styles.navMenu}>
-            <button style={activeTab === 'analytics' ? styles.navItemActive : styles.navItem} onClick={() => setActiveTab('analytics')}>
-              <span style={{ fontSize: '18px' }}>📊</span> Analytics
-            </button>
-            <button style={activeTab === 'students' ? styles.navItemActive : styles.navItem} onClick={() => setActiveTab('students')}>
-              <span style={{ fontSize: '18px' }}>🎓</span> Students
-            </button>
-            <button style={activeTab === 'mentors' ? styles.navItemActive : styles.navItem} onClick={() => setActiveTab('mentors')}>
-              <span style={{ fontSize: '18px' }}>👨‍🏫</span> Mentors / Teachers
-            </button>
-            <button style={activeTab === 'logs' ? styles.navItemActive : styles.navItem} onClick={() => setActiveTab('logs')}>
-              <span style={{ fontSize: '18px' }}>🕒</span> Activity Logs
-            </button>
-            <button style={activeTab === 'report' ? styles.navItemActive : styles.navItem} onClick={() => setActiveTab('report')}>
-              <span style={{ fontSize: '18px' }}>📜</span> Attendance Report
-            </button>
+            {navTabs.map(tab => (
+              <button
+                key={tab.key}
+                className={activeTab !== tab.key ? 'nav-item-hover' : ''}
+                style={activeTab === tab.key ? styles.navItemActive : styles.navItem}
+                onClick={() => setActiveTab(tab.key)}
+              >
+                <span style={{ fontSize: '18px' }}>{tab.icon}</span> {tab.label}
+              </button>
+            ))}
           </div>
 
           <div style={styles.sidebarFooter}>
@@ -89,27 +185,17 @@ export default function AdminDashboard() {
 
         <main style={styles.mainContent}>
           <header style={styles.mainHeader}>
-            <h1 style={styles.pageTitle}>
-              {activeTab === 'analytics' && 'Dashboard Overview'}
-              {activeTab === 'students' && 'Students Directory'}
-              {activeTab === 'mentors' && 'Teachers & Mentors'}
-              {activeTab === 'logs' && 'System Activity Logs'}
-              {activeTab === 'report' && 'Attendance Report & History'}
-            </h1>
+            <h1 style={styles.pageTitle}>{pageTitles[activeTab]}</h1>
           </header>
 
           <div style={styles.contentArea}>
-            {activeTab === 'analytics' && <Analytics />}
-            {activeTab === 'students' && <StudentsTable />}
-            {activeTab === 'mentors' && <MentorsTable />}
-            {activeTab === 'logs' && <ActivityLogs />}
-            {activeTab === 'report' && <AttendanceReport />}
+            {renderContent()}
           </div>
         </main>
       </div>
 
       {toast.message && (
-        <div style={toast.type === 'error' ? styles.toastError : styles.toastSuccess}>
+        <div className="toast-animate" style={toast.type === 'error' ? styles.toastError : styles.toastSuccess}>
           {toast.type === 'error' ? (
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
               <circle cx="12" cy="12" r="10"></circle>

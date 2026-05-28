@@ -1,7 +1,41 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import styles from './MentorsTable.styles';
+import useIsMobile from '../../hooks/useIsMobile';
+
+// Skeleton loading row component
+const SkeletonRows = ({ count = 5 }) => (
+  <>
+    {Array.from({ length: count }).map((_, i) => (
+      <tr key={`skeleton-${i}`} className="skeleton-row">
+        {Array.from({ length: 6 }).map((_, j) => (
+          <td key={j} style={styles.td}>
+            <div className="skeleton-cell" style={{ width: j === 1 ? '140px' : '80px', height: '14px' }}></div>
+          </td>
+        ))}
+      </tr>
+    ))}
+  </>
+);
+
+// Mobile skeleton card
+const MobileSkeletonCards = ({ count = 4 }) => (
+  <>
+    {Array.from({ length: count }).map((_, i) => (
+      <div key={`mskel-${i}`} style={styles.mobileCard}>
+        <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+          <div className="skeleton" style={{ width: '40px', height: '40px', borderRadius: '50%' }}></div>
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '6px' }}>
+            <div className="skeleton-cell" style={{ width: '60%', height: '14px' }}></div>
+            <div className="skeleton-cell" style={{ width: '40%', height: '10px' }}></div>
+          </div>
+        </div>
+      </div>
+    ))}
+  </>
+);
 
 export default function MentorsTable() {
+  const isMobile = useIsMobile();
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -31,6 +65,18 @@ export default function MentorsTable() {
     'Content-Type': 'application/json',
     'Authorization': `Bearer ${token}`
   };
+
+  // Close modals on Escape key
+  const handleKeyDown = useCallback((e) => {
+    if (e.key === 'Escape') {
+      setShowEditModal(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [handleKeyDown]);
 
   // Reset page to 1 when filters change
   useEffect(() => {
@@ -126,32 +172,64 @@ export default function MentorsTable() {
     }
   };
 
+  // Mobile card renderer
+  const renderMobileCards = () => {
+    if (loading) return <MobileSkeletonCards count={4} />;
+    if (users.length === 0) return <div style={styles.empty}>No users found</div>;
+
+    return users.map(u => (
+      <div key={u.id} className="mobile-card" style={styles.mobileCard}>
+        <div style={styles.mobileCardTop}>
+          <div style={styles.mobileCardInfo}>
+            <div style={styles.mobileCardAvatar}>{u.name.charAt(0).toUpperCase()}</div>
+            <div>
+              <div style={styles.mobileCardName}>{u.name}</div>
+              <div style={styles.mobileCardMeta}>{u.login_id} • {u.phone}</div>
+            </div>
+          </div>
+          <div style={styles.actionBtns}>
+            <button className="btn-action" style={styles.btnIcon} onClick={() => openEditModal(u)}>✏️</button>
+            <button className="btn-action-delete" style={styles.btnIconDelete} onClick={() => handleDelete(u.id)}>🗑️</button>
+          </div>
+        </div>
+        <div style={styles.mobileCardBottom}>
+          <span style={u.role === 'teacher' ? styles.badgeTeacher : styles.badgeMentor}>
+            {u.role.toUpperCase()}
+          </span>
+          {u.role === 'teacher' && u.level && (
+            <span style={styles.badgeLevel}>{u.level}</span>
+          )}
+        </div>
+      </div>
+    ));
+  };
+
   return (
-    <div style={styles.container}>
+    <div style={{...styles.container, ...(isMobile ? {padding: '14px', borderRadius: '12px', marginTop: '12px'} : {})}}>
       <div style={styles.header}>
-        <h2 style={styles.title}>Mentors & Teachers Management</h2>
+        <h2 style={{...styles.title, ...(isMobile ? {fontSize: '16px'} : {})}}>Teachers & Mentors</h2>
         <div style={styles.actions}>
-          <button style={styles.btnPrimary} onClick={() => {
+          <button style={{...styles.btnPrimary, ...(isMobile ? {padding: '7px 12px', fontSize: '12px', borderRadius: '8px'} : {})}} onClick={() => {
             document.dispatchEvent(new CustomEvent('openCreateUserModal'));
-          }}>+ Create User</button>
+          }}>+ Add</button>
         </div>
       </div>
 
       {/* Filter Bar */}
-      <div style={styles.filterBar}>
-        <div style={styles.filterGroup}>
+      <div style={{ ...styles.filterBar, ...(isMobile ? { flexDirection: 'column', gap: '8px', padding: '10px', borderRadius: '10px', marginBottom: '12px' } : {}) }}>
+        <div style={{ ...styles.filterGroup, ...(isMobile ? { flex: 'unset', width: '100%', borderRadius: '8px' } : {}) }}>
           <span style={styles.filterIcon}>🔍</span>
           <input 
             type="text" 
-            placeholder="Search by Name, Login ID, Phone..." 
-            style={styles.searchInput}
+            placeholder="Search..." 
+            style={{...styles.searchInput, ...(isMobile ? {padding: '8px 8px', fontSize: '13px'} : {})}}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
-        <div style={styles.filterSelects}>
+        <div style={{...styles.filterSelects, ...(isMobile ? {width: '100%'} : {})}}>
           <select 
-            style={styles.filterSelect} 
+            style={{...styles.filterSelect, ...(isMobile ? {padding: '8px 10px', fontSize: '12px', borderRadius: '8px', flex: 1} : {})}} 
             value={filterRole} 
             onChange={(e) => setFilterRole(e.target.value)}
           >
@@ -164,89 +242,103 @@ export default function MentorsTable() {
 
       {error && <div style={styles.error}>{error}</div>}
 
-      <div style={styles.tableWrapper} className="overflow-x-auto w-full">
-        <table style={styles.table}>
-          <thead>
-            <tr>
-              <th style={styles.th}>Login ID</th>
-              <th style={styles.th}>Name</th>
-              <th style={styles.th}>Role</th>
-              <th style={styles.th}>Phone</th>
-              <th style={styles.th}>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {loading ? (
-              <tr><td colSpan="5" style={styles.empty}>Loading users...</td></tr>
-            ) : users.length === 0 ? (
-              <tr><td colSpan="5" style={styles.empty}>No users found</td></tr>
-            ) : (
-              users.map(u => (
-                <tr key={u.id} style={styles.tr}>
-                  <td style={styles.td}>{u.login_id}</td>
-                  <td style={styles.td}>{u.name}</td>
-                  <td style={styles.td}>
-                    <span style={u.role === 'teacher' ? styles.badgeTeacher : styles.badgeMentor}>
-                      {u.role.toUpperCase()} {u.role === 'teacher' && u.level ? `(${u.level})` : ''}
-                    </span>
-                  </td>
-                  <td style={styles.td}>{u.phone}</td>
-                  <td style={styles.td}>
-                    <div style={styles.actionBtns}>
-                      <button style={styles.btnIcon} onClick={() => openEditModal(u)}>✏️</button>
-                      <button style={styles.btnIconDelete} onClick={() => handleDelete(u.id)}>🗑️</button>
-                    </div>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+      {/* Mobile: Card layout | Desktop: Table layout */}
+      {isMobile ? (
+        <div style={styles.mobileCardList}>
+          {renderMobileCards()}
+        </div>
+      ) : (
+        <div style={styles.tableWrapper}>
+          <table style={styles.table}>
+            <thead>
+              <tr>
+                <th style={styles.th}>Login ID</th>
+                <th style={styles.th}>Name</th>
+                <th style={styles.th}>Role</th>
+                <th style={styles.th}>Level</th>
+                <th style={styles.th}>Phone</th>
+                <th style={styles.th}>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {loading ? (
+                <SkeletonRows count={limit > 10 ? 10 : limit} />
+              ) : users.length === 0 ? (
+                <tr><td colSpan="6" style={styles.empty}>No users found</td></tr>
+              ) : (
+                users.map(u => (
+                  <tr key={u.id} style={styles.tr} className="table-row-hover">
+                    <td style={styles.td}>{u.login_id}</td>
+                    <td style={styles.td}>{u.name}</td>
+                    <td style={styles.td}>
+                      <span style={u.role === 'teacher' ? styles.badgeTeacher : styles.badgeMentor}>
+                        {u.role.toUpperCase()}
+                      </span>
+                    </td>
+                    <td style={styles.td}>
+                      {u.role === 'teacher' && u.level ? (
+                        <span style={styles.badgeLevel}>{u.level}</span>
+                      ) : (
+                        <span style={{ color: 'rgba(255,255,255,0.2)' }}>—</span>
+                      )}
+                    </td>
+                    <td style={styles.td}>{u.phone}</td>
+                    <td style={styles.td}>
+                      <div style={styles.actionBtns}>
+                        <button className="btn-action" style={styles.btnIcon} onClick={() => openEditModal(u)}>✏️</button>
+                        <button className="btn-action-delete" style={styles.btnIconDelete} onClick={() => handleDelete(u.id)}>🗑️</button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      )}
 
-        {/* Pagination Controls */}
-        <div style={styles.paginationBar}>
-          <div style={styles.paginationInfo}>
-            Showing {users.length > 0 ? ((currentPage - 1) * limit) + 1 : 0} to {Math.min(currentPage * limit, totalUsers)} of {totalUsers} users
+      {/* Pagination Controls */}
+      <div style={{ ...styles.paginationBar, ...(isMobile ? { flexDirection: 'column', gap: '8px', alignItems: 'stretch', padding: '10px' } : {}) }}>
+        <div style={{...styles.paginationInfo, ...(isMobile ? {fontSize: '12px'} : {})}}>
+          {users.length > 0 ? ((currentPage - 1) * limit) + 1 : 0}–{Math.min(currentPage * limit, totalUsers)} of {totalUsers}
+        </div>
+        <div style={{ ...styles.paginationControls, ...(isMobile ? { justifyContent: 'space-between' } : {}) }}>
+          <div style={{...styles.rowsPerPage, ...(isMobile ? {fontSize: '12px', gap: '4px'} : {})}}>
+            Per page:
+            <select 
+              value={limit} 
+              onChange={(e) => { setLimit(Number(e.target.value)); setCurrentPage(1); }}
+              style={{...styles.limitSelect, ...(isMobile ? {padding: '3px 6px', fontSize: '12px'} : {})}}
+            >
+              <option value={10}>10</option>
+              <option value={20}>20</option>
+              <option value={50}>50</option>
+            </select>
           </div>
-          <div style={styles.paginationControls}>
-            <div style={styles.rowsPerPage}>
-              Rows per page:
-              <select 
-                value={limit} 
-                onChange={(e) => { setLimit(Number(e.target.value)); setCurrentPage(1); }}
-                style={styles.limitSelect}
-              >
-                <option value={10}>10</option>
-                <option value={20}>20</option>
-                <option value={50}>50</option>
-                <option value={100}>100</option>
-              </select>
-            </div>
-            <div style={styles.pageButtons}>
-              <button 
-                style={currentPage === 1 ? styles.pageBtnDisabled : styles.pageBtn} 
-                disabled={currentPage === 1}
-                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-              >
-                &lt;
-              </button>
-              <span style={styles.pageInfo}>Page {currentPage} of {totalPages || 1}</span>
-              <button 
-                style={currentPage === totalPages || totalPages === 0 ? styles.pageBtnDisabled : styles.pageBtn} 
-                disabled={currentPage === totalPages || totalPages === 0}
-                onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-              >
-                &gt;
-              </button>
-            </div>
+          <div style={{...styles.pageButtons, ...(isMobile ? {gap: '8px'} : {})}}>
+            <button 
+              style={{...(currentPage === 1 ? styles.pageBtnDisabled : styles.pageBtn), ...(isMobile ? {width: '28px', height: '28px', fontSize: '12px', borderRadius: '7px'} : {})}} 
+              disabled={currentPage === 1}
+              onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+            >
+              &lt;
+            </button>
+            <span style={{...styles.pageInfo, ...(isMobile ? {fontSize: '12px'} : {})}}>{currentPage}/{totalPages || 1}</span>
+            <button 
+              style={{...(currentPage === totalPages || totalPages === 0 ? styles.pageBtnDisabled : styles.pageBtn), ...(isMobile ? {width: '28px', height: '28px', fontSize: '12px', borderRadius: '7px'} : {})}} 
+              disabled={currentPage === totalPages || totalPages === 0}
+              onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+            >
+              &gt;
+            </button>
           </div>
         </div>
       </div>
 
       {/* Edit User Modal */}
       {showEditModal && (
-        <div style={styles.modalOverlay}>
-          <div style={styles.modal}>
+        <div style={styles.modalOverlay} className="modal-overlay-enter">
+          <div style={styles.modal} className="modal-enter">
             <h3 style={styles.modalTitle}>Edit User</h3>
             <form onSubmit={handleEditSubmit} style={styles.formGrid}>
               <div style={styles.formGroup}>
@@ -284,7 +376,7 @@ export default function MentorsTable() {
                 </div>
               )}
               
-              <div style={{...styles.formGroup, gridColumn: '1 / -1'}}>
+              <div style={styles.modalActions}>
                 <button type="button" style={styles.btnCancel} onClick={() => setShowEditModal(false)}>Cancel</button>
                 <button type="submit" style={styles.btnSave}>Save Changes</button>
               </div>

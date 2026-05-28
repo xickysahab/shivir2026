@@ -124,14 +124,14 @@ export default function Login() {
       </div>
 
       {/* Login Card */}
-      <div style={{ ...styles.card, animation: 'slideUp 0.6s ease 0.25s both' }} className="!p-6 md:!p-9 !w-[90%] md:!w-full">
+      <div style={{ ...styles.card, animation: 'slideUp 0.6s ease 0.25s both' }}>
         <form onSubmit={handleSubmit} style={styles.form}>
           {/* Login ID / Username */}
           <div style={styles.fieldGroup}>
             <label htmlFor="loginId" style={styles.label}>
               {isAdmin ? 'Username' : 'Login ID'}
             </label>
-            <div style={styles.inputWrapper}>
+            <div style={styles.inputWrapper} className="input-focus-ring">
               <div style={styles.inputIcon}>
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
@@ -146,14 +146,6 @@ export default function Login() {
                 onChange={(e) => setLoginId(e.target.value)}
                 style={styles.input}
                 required
-                onFocus={(e) => {
-                  e.target.parentElement.style.borderColor = 'rgba(99, 102, 241, 0.5)';
-                  e.target.parentElement.style.boxShadow = '0 0 0 3px rgba(99, 102, 241, 0.1)';
-                }}
-                onBlur={(e) => {
-                  e.target.parentElement.style.borderColor = 'rgba(255, 255, 255, 0.08)';
-                  e.target.parentElement.style.boxShadow = 'none';
-                }}
               />
             </div>
           </div>
@@ -163,7 +155,7 @@ export default function Login() {
             <label htmlFor="password" style={styles.label}>
               Password
             </label>
-            <div style={styles.inputWrapper}>
+            <div style={styles.inputWrapper} className="input-focus-ring">
               <div style={styles.inputIcon}>
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
@@ -178,14 +170,6 @@ export default function Login() {
                 onChange={(e) => setPassword(e.target.value)}
                 style={styles.input}
                 required
-                onFocus={(e) => {
-                  e.target.parentElement.style.borderColor = 'rgba(99, 102, 241, 0.5)';
-                  e.target.parentElement.style.boxShadow = '0 0 0 3px rgba(99, 102, 241, 0.1)';
-                }}
-                onBlur={(e) => {
-                  e.target.parentElement.style.borderColor = 'rgba(255, 255, 255, 0.08)';
-                  e.target.parentElement.style.boxShadow = 'none';
-                }}
               />
             </div>
           </div>
