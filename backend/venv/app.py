@@ -50,6 +50,11 @@ def create_app():
     app.register_blueprint(attendance_bp, url_prefix='/api/attendance')
     app.register_blueprint(logs_bp, url_prefix='/api/logs')
 
+    @app.route('/api/health', methods=['GET'])
+    def health_check():
+        from flask import jsonify
+        return jsonify({"status": "active"}), 200
+
     return app
 
 if __name__ == '__main__':
