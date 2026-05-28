@@ -3,7 +3,7 @@ from flask_jwt_extended import get_jwt, get_jwt_identity
 from datetime import datetime, timezone, timedelta
 from extensions import db
 from model import Student, Attendance
-from utils import role_required, log_activity
+from utils import role_required, log_activity, natural_sort_key
 
 attendance_bp = Blueprint('attendance', __name__)
 
@@ -33,7 +33,7 @@ def get_attendance():
         query = query.filter(Student.level == level)
         
     students = query.all()
-    students.sort(key=lambda s: int(s.roll_no) if (s.roll_no and s.roll_no.isdigit()) else float('inf'))
+    students.sort(key=natural_sort_key)
 
     student_ids = [s.id for s in students]
     if student_ids:
@@ -206,4 +206,24 @@ def get_attendance_summary():
         'level': level,
         'totalStudents': total_students,
         'data': summary
+    }), 200
+
+@attendance_bp.route('/student/<int:student_id>', methods=['GET'])
+@role_required(['admin', 'teacher', 'mentor'])
+def get_student_attendance(student_id):
+    claims = get_jwt()
+    user_role = claims.get('role')
+    assigned_level = claims.get('assigned_level')
+    
+    if user_role == 'teacher':
+        student = Student.query.get(student_id)
+        if not student or student.level != assigned_level:
+            return jsonify({'success': False, 'message': 'Access forbidden'}), 403
+            
+    records = Attendance.query.filter_by(student_id=student_id).all()
+    data = {r.date.strftime('%Y-%m-%d'): r.status for r in records}
+    
+    return jsonify({
+        'success': True,
+        'data': data
     }), 200

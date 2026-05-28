@@ -8,6 +8,24 @@ from model import AuditLog
 ADMIN_USERNAME = 'admin'
 ADMIN_PASSWORD = 'admin123'
 
+import re
+
+def natural_sort_key(s_or_roll):
+    # s_or_roll can be a Student object or a string/roll_no
+    roll = s_or_roll.roll_no if hasattr(s_or_roll, 'roll_no') else s_or_roll
+    if not roll:
+        return ('Z', float('inf'))
+    
+    # Clean the roll string
+    roll_str = str(roll).strip()
+    match = re.match(r'^([A-Za-z]+)(\d+)$', roll_str)
+    if match:
+        return (match.group(1).upper(), int(match.group(2)))
+    if roll_str.isdigit():
+        return ('', int(roll_str))
+    return (roll_str.upper(), float('inf'))
+
+
 # RBAC Decorator
 def role_required(allowed_roles):
     def decorator(fn):

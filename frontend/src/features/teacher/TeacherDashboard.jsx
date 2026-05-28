@@ -237,17 +237,7 @@ export default function TeacherDashboard() {
                   </div>
                 </div>
 
-                <div style={styles.bulkActions}>
-                  <button onClick={() => handleMarkAll('Present')} style={styles.btnBulkPresent}>
-                    ✅ Mark All Present
-                  </button>
-                  <button onClick={() => handleMarkAll('Absent')} style={styles.btnBulkAbsent}>
-                    ❌ Mark All Absent
-                  </button>
-                  <button onClick={() => handleMarkAll(null)} style={styles.btnBulkClear}>
-                    ↺ Clear All
-                  </button>
-                </div>
+
 
                 <div style={styles.studentGrid}>
                   {loadingAttendance ? (

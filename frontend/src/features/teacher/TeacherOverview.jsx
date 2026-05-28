@@ -18,7 +18,7 @@ export default function TeacherOverview() {
   useEffect(() => {
     const fetchStudents = async () => {
       try {
-        const res = await fetch('/api/students/', {
+        const res = await fetch('/api/students/?all=true', {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         const data = await res.json();

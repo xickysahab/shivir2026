@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import styles from './StudentsTable.styles';
+import StudentDetailsModal from './StudentDetailsModal';
 
 export default function StudentsTable() {
   const [students, setStudents] = useState([]);
@@ -21,6 +22,7 @@ export default function StudentsTable() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showPointsModal, setShowPointsModal] = useState(false);
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [currentStudent, setCurrentStudent] = useState(null);
 
   // Form state
@@ -106,6 +108,11 @@ export default function StudentsTable() {
     setCurrentStudent(student);
     setFormData({ points: student.points });
     setShowPointsModal(true);
+  };
+
+  const openDetailsModal = (student) => {
+    setCurrentStudent(student);
+    setShowDetailsModal(true);
   };
 
   const handleAddSubmit = async (e) => {
@@ -318,8 +325,9 @@ export default function StudentsTable() {
                   <td style={styles.td}>{s.mobile}</td>
                   <td style={styles.td}>
                     <div style={styles.actionBtns}>
-                      <button style={styles.btnIcon} onClick={() => openPointsModal(s)}>🏆</button>
-                      <button style={styles.btnIcon} onClick={() => openEditModal(s)}>✏️</button>
+                      <button style={styles.btnIcon} onClick={() => openDetailsModal(s)} title="View Details">ℹ️</button>
+                      <button style={styles.btnIcon} onClick={() => openPointsModal(s)} title="Update Points">🏆</button>
+                      <button style={styles.btnIcon} onClick={() => openEditModal(s)} title="Edit">✏️</button>
                       {role === 'admin' && (
                         <button style={styles.btnIconDelete} onClick={() => handleDelete(s.id)}>🗑️</button>
                       )}
@@ -348,6 +356,7 @@ export default function StudentsTable() {
                 <option value={20}>20</option>
                 <option value={50}>50</option>
                 <option value={100}>100</option>
+                <option value={500}>All</option>
               </select>
             </div>
             <div style={styles.pageButtons}>
@@ -456,6 +465,14 @@ export default function StudentsTable() {
             </form>
           </div>
         </div>
+      )}
+
+      {/* Student Details Modal */}
+      {showDetailsModal && currentStudent && (
+        <StudentDetailsModal 
+          student={currentStudent} 
+          onClose={() => setShowDetailsModal(false)} 
+        />
       )}
     </div>
   );

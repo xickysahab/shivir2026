@@ -5,9 +5,26 @@ from flask import Blueprint, request, jsonify
 from flask_jwt_extended import get_jwt
 from extensions import db
 from model import Student
-from utils import role_required, log_activity
+import re
+from utils import role_required, log_activity, natural_sort_key
 
 students_bp = Blueprint('students', __name__)
+
+def sync_roll_numbers(prefix):
+    students = Student.query.all()
+    level_students = []
+    for s in students:
+        if s.roll_no:
+            match = re.match(rf'^{prefix}(\d+)$', s.roll_no.strip())
+            if match:
+                level_students.append((s, int(match.group(1))))
+    
+    # Sort by current numeric suffix
+    level_students.sort(key=lambda item: item[1])
+    
+    # Re-assign sequentially starting from 1
+    for idx, (s, _) in enumerate(level_students):
+        s.roll_no = f"{prefix}{idx + 1}"
 
 @students_bp.route('/', methods=['GET'])
 @role_required(['admin', 'teacher', 'mentor'])
@@ -52,8 +69,8 @@ def get_students():
         
     students = query.all()
     
-    # Proper ascending sort by roll_no as integer
-    students.sort(key=lambda s: int(s.roll_no) if (s.roll_no and s.roll_no.isdigit()) else float('inf'))
+    # Proper ascending sort by roll_no using shared natural sort key
+    students.sort(key=natural_sort_key)
 
     total_count = len(students)
     start_index = (page - 1) * limit
@@ -99,15 +116,30 @@ def get_students():
 def add_student():
     data = request.get_json()
     try:
-        students = Student.query.all()
-        max_roll = 0
-        for s in students:
-            if s.roll_no and s.roll_no.isdigit():
-                r = int(s.roll_no)
-                if r > max_roll:
-                    max_roll = r
+        # Determine prefix based on student's level
+        level = data.get('level')
+        level_map = {
+            'Level 1': 'A',
+            'Level 2': 'B',
+            'Level 3': 'C',
+            'Level 4': 'D',
+            'Level 5': 'E',
+            'प्रौढ़ कक्षा': 'P'
+        }
+        prefix = level_map.get(level, 'A')
         
-        new_roll_no = str(max_roll + 1)
+        # Find maximum numeric roll number suffix for this level/prefix
+        students = Student.query.all()
+        max_suffix = 0
+        for s in students:
+            if s.roll_no:
+                match = re.match(rf'^{prefix}(\d+)$', s.roll_no.strip())
+                if match:
+                    val = int(match.group(1))
+                    if val > max_suffix:
+                        max_suffix = val
+        
+        new_roll_no = f"{prefix}{max_suffix + 1}"
 
         new_student = Student(
             roll_no=new_roll_no,
@@ -139,6 +171,16 @@ def update_student(id):
         return jsonify({'success': False, 'message': 'Student not found'}), 404
 
     try:
+        old_level = student.level
+        new_level = data.get('level', student.level)
+        
+        # Extract old prefix for syncing later if level changes
+        old_prefix = 'A'
+        if student.roll_no:
+            match = re.match(r'^([A-Za-z]+)', student.roll_no.strip())
+            if match:
+                old_prefix = match.group(1).upper()
+
         student.name = data.get('name', student.name)
         student.mobile = data.get('mobile', student.mobile)
         student.father_name = data.get('father_name', student.father_name)
@@ -146,7 +188,37 @@ def update_student(id):
         student.age = data.get('age', student.age)
         student.address = data.get('address', student.address)
         student.pin_code = data.get('pin_code', student.pin_code)
-        student.level = data.get('level', student.level)
+        
+        if old_level != new_level:
+            student.level = new_level
+            # Auto-assign roll no in new level
+            level_map = {
+                'Level 1': 'A',
+                'Level 2': 'B',
+                'Level 3': 'C',
+                'Level 4': 'D',
+                'Level 5': 'E',
+                'प्रौढ़ कक्षा': 'P'
+            }
+            new_prefix = level_map.get(new_level, 'A')
+            
+            # Find max in new prefix
+            students = Student.query.all()
+            max_suffix = 0
+            for s in students:
+                if s.roll_no and s.id != student.id:
+                    m = re.match(rf'^{new_prefix}(\d+)$', s.roll_no.strip())
+                    if m:
+                        val = int(m.group(1))
+                        if val > max_suffix:
+                            max_suffix = val
+            
+            student.roll_no = f"{new_prefix}{max_suffix + 1}"
+            
+            # Flush changes and sync the old prefix series to close the gap
+            db.session.flush()
+            sync_roll_numbers(old_prefix)
+        
         log_activity("UPDATE_STUDENT", f"Updated student: {student.name} (Roll No: {student.roll_no})")
         db.session.commit()
         return jsonify({'success': True, 'message': 'Student updated successfully!'}), 200
@@ -184,21 +256,19 @@ def delete_student(id):
         return jsonify({'success': False, 'message': 'Student not found'}), 404
         
     deleted_roll_str = student.roll_no
-    deleted_roll = None
-    if deleted_roll_str and deleted_roll_str.isdigit():
-        deleted_roll = int(deleted_roll_str)
-        
     try:
-        db.session.delete(student)
+        # Find prefix of the deleted student
+        prefix = 'A'
+        if student.roll_no:
+            match = re.match(r'^([A-Za-z]+)', student.roll_no.strip())
+            if match:
+                prefix = match.group(1).upper()
         
-        # Auto-sync (shift down) the roll numbers of all students after the deleted one
-        if deleted_roll is not None:
-            all_students = Student.query.all()
-            for s in all_students:
-                if s.roll_no and s.roll_no.isdigit():
-                    r = int(s.roll_no)
-                    if r > deleted_roll:
-                        s.roll_no = str(r - 1)
+        db.session.delete(student)
+        db.session.flush() # Ensure deleted from session so sync_roll_numbers doesn't see it
+        
+        # Auto-sync the specific level series
+        sync_roll_numbers(prefix)
                         
         log_activity("DELETE_STUDENT", f"Deleted student: {student.name} (Roll No: {deleted_roll_str})")
         db.session.commit()

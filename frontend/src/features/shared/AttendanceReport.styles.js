@@ -44,8 +44,8 @@ const styles = {
   },
   calendarGrid: {
     display: 'grid',
-    gridTemplateColumns: 'repeat(7, 1fr)',
-    gap: '12px',
+    gridTemplateColumns: 'repeat(4, 1fr)',
+    gap: '16px',
     marginTop: '16px'
   },
   dayHeader: {
@@ -234,6 +234,44 @@ const styles = {
     cursor: 'pointer',
     transition: 'all 0.2s',
     boxShadow: '0 4px 12px rgba(99, 102, 241, 0.3)'
+  },
+  pieChartContainer: {
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: '12px',
+    marginBottom: '8px'
+  },
+  pieChart: {
+    width: '60px',
+    height: '60px',
+    borderRadius: '50%',
+    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)'
+  },
+  statsLegend: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '4px',
+    fontSize: '11px',
+    marginTop: '8px',
+    paddingTop: '8px',
+    borderTop: '1px solid rgba(255,255,255,0.05)'
+  },
+  legendItem: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: '6px'
+  },
+  legendLabelBox: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '6px'
+  },
+  legendColor: {
+    width: '8px',
+    height: '8px',
+    borderRadius: '50%'
   }
 };
 
