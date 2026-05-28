@@ -1,0 +1,9 @@
+/* App-level styles — global layout utilities */
+
+/* Ensure smooth page transitions */
+#root {
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}

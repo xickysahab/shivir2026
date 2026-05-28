@@ -1,0 +1,151 @@
+const styles = {
+  page: {
+    minHeight: '100vh',
+    width: '100%',
+    background: 'linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 40%, #16213e 100%)',
+    fontFamily: "'Inter', system-ui, sans-serif",
+    position: 'relative',
+    overflowX: 'clip',
+  },
+  orb1: { position: 'absolute', top: '5%', right: '10%', width: '350px', height: '350px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(99, 102, 241, 0.08) 0%, transparent 70%)', filter: 'blur(50px)', pointerEvents: 'none' },
+  orb2: { position: 'absolute', bottom: '10%', left: '5%', width: '280px', height: '280px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(6, 214, 160, 0.06) 0%, transparent 70%)', filter: 'blur(50px)', pointerEvents: 'none' },
+  
+  layout: {
+    display: 'flex',
+    height: '100vh',
+    position: 'relative',
+    zIndex: 10,
+  },
+  
+  /* Sidebar styles */
+  sidebar: {
+    width: '280px',
+    background: 'rgba(20, 20, 30, 0.6)',
+    backdropFilter: 'blur(20px)',
+    borderRight: '1px solid rgba(255, 255, 255, 0.06)',
+    display: 'flex',
+    flexDirection: 'column',
+    padding: '24px 0',
+  },
+  sidebarHeader: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '12px',
+    padding: '0 24px 32px 24px',
+    borderBottom: '1px solid rgba(255,255,255,0.06)',
+  },
+  logoMark: { display: 'flex', alignItems: 'center' },
+  sidebarTitle: { margin: 0, fontSize: '18px', fontWeight: 800, color: 'rgba(255, 255, 255, 0.95)' },
+  roleBadge: { fontSize: '11px', fontWeight: 700, color: '#818cf8', textTransform: 'uppercase', letterSpacing: '0.05em' },
+  
+  navMenu: {
+    flex: 1,
+    padding: '24px 16px',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '8px',
+  },
+  navItem: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '12px',
+    padding: '14px 16px',
+    borderRadius: '12px',
+    background: 'transparent',
+    color: 'rgba(255,255,255,0.6)',
+    border: 'none',
+    cursor: 'pointer',
+    fontSize: '15px',
+    fontWeight: '600',
+    transition: 'all 0.2s ease',
+    textAlign: 'left',
+  },
+  navItemActive: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '12px',
+    padding: '14px 16px',
+    borderRadius: '12px',
+    background: 'rgba(99, 102, 241, 0.15)',
+    color: '#818cf8',
+    border: '1px solid rgba(99, 102, 241, 0.3)',
+    cursor: 'pointer',
+    fontSize: '15px',
+    fontWeight: '600',
+    boxShadow: '0 4px 20px rgba(99, 102, 241, 0.1)',
+    textAlign: 'left',
+  },
+  
+  sidebarFooter: {
+    padding: '24px',
+    borderTop: '1px solid rgba(255,255,255,0.06)',
+  },
+  logoutBtn: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '100%',
+    gap: '8px',
+    padding: '12px',
+    borderRadius: '10px',
+    background: 'rgba(239, 68, 68, 0.1)',
+    color: '#f87171',
+    border: '1px solid rgba(239, 68, 68, 0.2)',
+    cursor: 'pointer',
+    fontSize: '14px',
+    fontWeight: '600',
+    transition: 'all 0.2s ease',
+  },
+  
+  /* Main Content Styles */
+  mainContent: {
+    flex: 1,
+    display: 'flex',
+    flexDirection: 'column',
+    overflowY: 'auto',
+  },
+  mainHeader: {
+    padding: '32px 40px',
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  pageTitle: {
+    margin: 0,
+    fontSize: '28px',
+    fontWeight: 800,
+    color: 'white',
+  },
+  headerBtn: {
+    padding: '12px 24px',
+    background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
+    color: 'white',
+    border: 'none',
+    borderRadius: '10px',
+    fontWeight: 'bold',
+    cursor: 'pointer',
+    boxShadow: '0 4px 15px rgba(99, 102, 241, 0.3)',
+  },
+  contentArea: {
+    flex: 1,
+    padding: '0 40px 40px 40px',
+    animation: 'slideUp 0.5s ease',
+  },
+
+  toastSuccess: {
+    position: 'fixed', bottom: '24px', right: '24px', zIndex: 50,
+    display: 'flex', alignItems: 'center', gap: '8px', padding: '14px 24px',
+    background: 'linear-gradient(135deg, #059669, #06d6a0)', color: '#ffffff',
+    borderRadius: '14px', fontSize: '14px', fontWeight: 600,
+    boxShadow: '0 8px 30px rgba(6, 214, 160, 0.3)', animation: 'toast-in 0.3s ease',
+  },
+  toastError: {
+    position: 'fixed', bottom: '24px', right: '24px', zIndex: 50,
+    display: 'flex', alignItems: 'center', gap: '8px', padding: '14px 24px',
+    background: 'linear-gradient(135deg, #e11d48, #fb7185)', color: '#ffffff',
+    borderRadius: '14px', fontSize: '14px', fontWeight: 600,
+    boxShadow: '0 8px 30px rgba(225, 29, 72, 0.3)', animation: 'toast-in 0.3s ease',
+  }
+};
+
+export default styles;
