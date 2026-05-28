@@ -50,6 +50,11 @@ def create_app():
     app.register_blueprint(attendance_bp, url_prefix='/api/attendance')
     app.register_blueprint(logs_bp, url_prefix='/api/logs')
 
+    @app.route('/', methods=['GET'])
+    def home():
+        from flask import jsonify
+        return jsonify({"status": "alive", "message": "Shivir 2026 API Server is running"}), 200
+
     @app.route('/api/health', methods=['GET'])
     def health_check():
         from flask import jsonify
