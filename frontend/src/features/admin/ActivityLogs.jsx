@@ -82,26 +82,7 @@ export default function ActivityLogs() {
     }
   };
 
-  const handleClearLogs = async () => {
-    if (!window.confirm('Are you sure you want to delete ALL activity logs? This cannot be undone.')) return;
-    try {
-      const res = await fetch('/api/logs/', {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
-      const data = await res.json();
-      if (data.success) {
-        alert(data.message);
-        fetchLogs();
-      } else {
-        alert(data.message);
-      }
-    } catch (err) {
-      alert('Error clearing logs');
-    }
-  };
+
 
   const formatDate = (isoString) => {
     const d = new Date(isoString);
@@ -187,9 +168,6 @@ export default function ActivityLogs() {
       <div style={{...styles.header, ...(isMobile ? {marginBottom: '12px', gap: '8px'} : {})}}>
         <h2 style={{...styles.title, ...(isMobile ? {fontSize: '16px'} : {})}}>Activity Logs</h2>
         <div style={{display: 'flex', gap: isMobile ? '6px' : '10px', flexWrap: 'wrap'}}>
-          <button className="btn-action-delete" style={{...styles.btnDanger, ...(isMobile ? {padding: '6px 10px', fontSize: '11px', borderRadius: '8px'} : {})}} onClick={handleClearLogs}>
-            🗑️ {isMobile ? 'Clear' : 'Clear Logs'}
-          </button>
           <button className="btn-action" style={{...styles.btnRefresh, ...(isMobile ? {padding: '6px 10px', fontSize: '11px', borderRadius: '8px'} : {})}} onClick={fetchLogs}>
             ↻ {isMobile ? '' : 'Refresh'}
           </button>

@@ -38,13 +38,3 @@ def get_logs():
     return jsonify({'success': True, 'data': log_list}), 200
 
 
-@logs_bp.route('/', methods=['DELETE'])
-@role_required(['admin'])
-def clear_logs():
-    try:
-        db.session.query(AuditLog).delete()
-        db.session.commit()
-        return jsonify({'success': True, 'message': 'All activity logs cleared successfully!'}), 200
-    except Exception as e:
-        db.session.rollback()
-        return jsonify({'success': False, 'message': str(e)}), 500
