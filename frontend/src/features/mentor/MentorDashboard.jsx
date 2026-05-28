@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import StudentsTable from '../shared/StudentsTable';
 import MentorOverview from './MentorOverview';
+import AttendanceReport from '../shared/AttendanceReport';
 import styles from './MentorDashboard.styles';
 
 export default function MentorDashboard() {
@@ -149,6 +150,12 @@ export default function MentorDashboard() {
             >
               <span style={{ fontSize: '18px' }}>📅</span> Attendance
             </button>
+            <button 
+              style={activeTab === 'report' ? styles.navItemActive : styles.navItem} 
+              onClick={() => setActiveTab('report')}
+            >
+              <span style={{ fontSize: '18px' }}>📜</span> Attendance Report
+            </button>
           </div>
 
           <div style={styles.sidebarFooter}>
@@ -173,12 +180,17 @@ export default function MentorDashboard() {
               {activeTab === 'overview' && 'Dashboard Overview'}
               {activeTab === 'students' && 'Students Directory'}
               {activeTab === 'attendance' && 'Level-wise Attendance'}
+              {activeTab === 'report' && 'Attendance Report & History'}
             </h1>
           </header>
 
           <div style={styles.contentArea}>
             {activeTab === 'overview' && (
               <MentorOverview />
+            )}
+
+            {activeTab === 'report' && (
+              <AttendanceReport />
             )}
 
             {activeTab === 'students' && (

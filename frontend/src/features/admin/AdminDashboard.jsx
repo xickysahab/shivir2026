@@ -5,6 +5,7 @@ import StudentsTable from '../shared/StudentsTable';
 import MentorsTable from './MentorsTable';
 import Analytics from './Analytics';
 import ActivityLogs from './ActivityLogs';
+import AttendanceReport from '../shared/AttendanceReport';
 import styles from './AdminDashboard.styles';
 
 export default function AdminDashboard() {
@@ -69,6 +70,9 @@ export default function AdminDashboard() {
             <button style={activeTab === 'logs' ? styles.navItemActive : styles.navItem} onClick={() => setActiveTab('logs')}>
               <span style={{ fontSize: '18px' }}>🕒</span> Activity Logs
             </button>
+            <button style={activeTab === 'report' ? styles.navItemActive : styles.navItem} onClick={() => setActiveTab('report')}>
+              <span style={{ fontSize: '18px' }}>📜</span> Attendance Report
+            </button>
           </div>
 
           <div style={styles.sidebarFooter}>
@@ -90,6 +94,7 @@ export default function AdminDashboard() {
               {activeTab === 'students' && 'Students Directory'}
               {activeTab === 'mentors' && 'Teachers & Mentors'}
               {activeTab === 'logs' && 'System Activity Logs'}
+              {activeTab === 'report' && 'Attendance Report & History'}
             </h1>
           </header>
 
@@ -98,6 +103,7 @@ export default function AdminDashboard() {
             {activeTab === 'students' && <StudentsTable />}
             {activeTab === 'mentors' && <MentorsTable />}
             {activeTab === 'logs' && <ActivityLogs />}
+            {activeTab === 'report' && <AttendanceReport />}
           </div>
         </main>
       </div>

@@ -88,12 +88,6 @@ def save_attendance():
         return jsonify({'success': False, 'message': 'Invalid date format. Use YYYY-MM-DD'}), 400
 
     today = (datetime.now(timezone.utc) + timedelta(hours=5, minutes=30)).date()
-    
-    if user_role != 'admin' and target_date < today:
-        return jsonify({
-            'success': False, 
-            'message': 'Access forbidden: Only Administrators can modify previous attendance records.'
-        }), 403
 
     if user_role != 'admin' and target_date > today:
         return jsonify({
@@ -146,3 +140,70 @@ def save_attendance():
     except Exception as e:
         db.session.rollback()
         return jsonify({'success': False, 'message': str(e)}), 500
+
+@attendance_bp.route('/summary', methods=['GET'])
+@role_required(['admin', 'teacher', 'mentor'])
+def get_attendance_summary():
+    import calendar
+    from datetime import date
+    claims = get_jwt()
+    user_role = claims.get('role')
+    assigned_level = claims.get('assigned_level')
+
+    year = request.args.get('year')
+    month = request.args.get('month')
+    if not year or not month:
+        now = datetime.now(timezone.utc) + timedelta(hours=5, minutes=30)
+        year = str(now.year)
+        month = str(now.month).zfill(2)
+        
+    level = request.args.get('level', '')
+    if user_role == 'teacher' and assigned_level:
+        level = assigned_level
+        
+    query = Student.query
+    if level and level != 'All':
+        query = query.filter(Student.level == level)
+        
+    students = query.all()
+    student_ids = [s.id for s in students]
+    total_students = len(students)
+    
+    if not student_ids:
+        return jsonify({'success': True, 'data': {}, 'totalStudents': 0}), 200
+        
+    year_int, month_int = int(year), int(month)
+    _, last_day = calendar.monthrange(year_int, month_int)
+    start_date = date(year_int, month_int, 1)
+    end_date = date(year_int, month_int, last_day)
+
+    attendance_records = Attendance.query.filter(
+        Attendance.student_id.in_(student_ids),
+        Attendance.date >= start_date,
+        Attendance.date <= end_date
+    ).all()
+    
+    # Aggregate by date
+    summary = {}
+    for r in attendance_records:
+        date_str = r.date.strftime('%Y-%m-%d')
+        if date_str not in summary:
+            summary[date_str] = {'Present': 0, 'Absent': 0}
+            
+        if r.status == 'Present':
+            summary[date_str]['Present'] += 1
+        elif r.status == 'Absent':
+            summary[date_str]['Absent'] += 1
+            
+    for date_str in summary:
+        marked = summary[date_str]['Present'] + summary[date_str]['Absent']
+        summary[date_str]['Unmarked'] = total_students - marked
+        
+    return jsonify({
+        'success': True,
+        'year': year,
+        'month': month,
+        'level': level,
+        'totalStudents': total_students,
+        'data': summary
+    }), 200

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import StudentsTable from '../shared/StudentsTable';
 import TeacherOverview from './TeacherOverview';
+import AttendanceReport from '../shared/AttendanceReport';
 import styles from './TeacherDashboard.styles';
 
 export default function TeacherDashboard() {
@@ -148,6 +149,12 @@ export default function TeacherDashboard() {
             >
               <span style={{ fontSize: '18px' }}>📅</span> Attendance
             </button>
+            <button 
+              style={activeTab === 'report' ? styles.navItemActive : styles.navItem} 
+              onClick={() => setActiveTab('report')}
+            >
+              <span style={{ fontSize: '18px' }}>📜</span> Attendance Report
+            </button>
           </div>
 
           <div style={styles.sidebarFooter}>
@@ -172,12 +179,17 @@ export default function TeacherDashboard() {
               {activeTab === 'overview' && 'Dashboard Overview'}
               {activeTab === 'students' && 'Students Directory'}
               {activeTab === 'attendance' && 'Daily Attendance'}
+              {activeTab === 'report' && 'Attendance Report & History'}
             </h1>
           </header>
 
           <div style={styles.contentArea}>
             {activeTab === 'overview' && (
               <TeacherOverview />
+            )}
+
+            {activeTab === 'report' && (
+              <AttendanceReport />
             )}
 
             {activeTab === 'students' && (
