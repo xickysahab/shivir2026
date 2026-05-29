@@ -128,7 +128,7 @@ export default function MentorsTable() {
       name: user.name,
       phone: user.phone,
       role: user.role,
-      level: user.level || '',
+      level: user.level ? user.level.split(',') : [],
       new_password: ''
     });
     setShowEditModal(true);
@@ -137,10 +137,14 @@ export default function MentorsTable() {
   const handleEditSubmit = async (e) => {
     e.preventDefault();
     try {
+      const payload = {
+        ...formData,
+        level: Array.isArray(formData.level) ? formData.level.join(',') : formData.level
+      };
       const res = await fetch(`/api/users/${currentUser.id}`, {
         method: 'PUT',
         headers,
-        body: JSON.stringify(formData)
+        body: JSON.stringify(payload)
       });
       const data = await res.json();
       if (data.success) {
@@ -196,9 +200,9 @@ export default function MentorsTable() {
           <span style={u.role === 'teacher' ? styles.badgeTeacher : styles.badgeMentor}>
             {u.role.toUpperCase()}
           </span>
-          {u.role === 'teacher' && u.level && (
-            <span style={styles.badgeLevel}>{u.level}</span>
-          )}
+          {u.role === 'teacher' && u.level && u.level.split(',').map((lvl, i) => (
+            <span key={i} style={styles.badgeLevel}>{lvl.trim()}</span>
+          ))}
         </div>
       </div>
     ));
@@ -277,7 +281,11 @@ export default function MentorsTable() {
                     </td>
                     <td style={styles.td}>
                       {u.role === 'teacher' && u.level ? (
-                        <span style={styles.badgeLevel}>{u.level}</span>
+                        <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
+                          {u.level.split(',').map((lvl, i) => (
+                            <span key={i} style={styles.badgeLevel}>{lvl.trim()}</span>
+                          ))}
+                        </div>
                       ) : (
                         <span style={{ color: 'rgba(255,255,255,0.2)' }}>—</span>
                       )}
@@ -363,16 +371,30 @@ export default function MentorsTable() {
               
               {formData.role === 'teacher' && (
                 <div style={styles.formGroup}>
-                  <label style={styles.label}>Assigned Level</label>
-                  <select style={styles.input} name="level" value={formData.level || ''} onChange={handleInputChange}>
-                    <option value="">Select Level</option>
-                    <option value="Level 1">Level 1</option>
-                    <option value="Level 2">Level 2</option>
-                    <option value="Level 3">Level 3</option>
-                    <option value="Level 4">Level 4</option>
-                    <option value="Level 5">Level 5</option>
-                    <option value="प्रौढ़ कक्षा">प्रौढ़ कक्षा</option>
-                  </select>
+                  <label style={styles.label}>Assigned Levels</label>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '4px' }}>
+                    {['Level 1', 'Level 2', 'Level 3', 'Level 4', 'Level 5', 'प्रौढ़ कक्षा'].map((lvl) => {
+                      const isChecked = Array.isArray(formData.level) && formData.level.includes(lvl);
+                      return (
+                        <label key={lvl} style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'rgba(255,255,255,0.05)', padding: '6px 10px', borderRadius: '6px', cursor: 'pointer', border: '1px solid', borderColor: isChecked ? 'rgba(99, 102, 241, 0.5)' : 'transparent', transition: 'all 0.2s' }}>
+                          <input
+                            type="checkbox"
+                            checked={isChecked}
+                            onChange={(e) => {
+                              const currentLevels = Array.isArray(formData.level) ? formData.level : [];
+                              if (e.target.checked) {
+                                setFormData({ ...formData, level: [...currentLevels, lvl] });
+                              } else {
+                                setFormData({ ...formData, level: currentLevels.filter(l => l !== lvl) });
+                              }
+                            }}
+                            style={{ accentColor: '#6366f1' }}
+                          />
+                          <span style={{ color: 'white', fontSize: '13px' }}>{lvl}</span>
+                        </label>
+                      );
+                    })}
+                  </div>
                 </div>
               )}
               

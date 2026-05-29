@@ -7,7 +7,7 @@ export default function CreateUserModal({ onClose, onSuccess }) {
   const [loginId, setLoginId] = useState('');
   const [password, setPassword] = useState('');
   const [role, setRole] = useState('teacher');
-  const [level, setLevel] = useState('Level 1');
+  const [levels, setLevels] = useState(['Level 1']);
   const [photo, setPhoto] = useState(null);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -25,7 +25,7 @@ export default function CreateUserModal({ onClose, onSuccess }) {
       formData.append('password', password);
       formData.append('role', role);
       if (role === 'teacher') {
-        formData.append('level', level);
+        formData.append('level', levels.join(','));
       }
       if (photo) {
         formData.append('photo', photo);
@@ -189,24 +189,30 @@ export default function CreateUserModal({ onClose, onSuccess }) {
             </div>
           </div>
 
-          {/* Assigned Level (Only for Teacher) */}
+          {/* Assigned Levels (Only for Teacher) */}
           {role === 'teacher' && (
             <div style={styles.fieldGroup}>
-              <label style={styles.label}>Assigned Level <span style={{ color: '#f87171' }}>*</span></label>
-              <select
-                value={level}
-                onChange={(e) => setLevel(e.target.value)}
-                style={styles.select}
-                onFocus={inputFocus}
-                onBlur={inputBlur}
-              >
-                <option value="Level 1">Level 1</option>
-                <option value="Level 2">Level 2</option>
-                <option value="Level 3">Level 3</option>
-                <option value="Level 4">Level 4</option>
-                <option value="Level 5">Level 5</option>
-                <option value="प्रौढ़ कक्षा">प्रौढ़ कक्षा</option>
-              </select>
+              <label style={styles.label}>Assigned Levels <span style={{ color: '#f87171' }}>*</span></label>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', marginTop: '8px' }}>
+                {['Level 1', 'Level 2', 'Level 3', 'Level 4', 'Level 5', 'प्रौढ़ कक्षा'].map((lvl) => (
+                  <label key={lvl} style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'rgba(255,255,255,0.05)', padding: '8px 12px', borderRadius: '8px', cursor: 'pointer', border: '1px solid', borderColor: levels.includes(lvl) ? 'rgba(99, 102, 241, 0.5)' : 'transparent', transition: 'all 0.2s' }}>
+                    <input
+                      type="checkbox"
+                      checked={levels.includes(lvl)}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setLevels([...levels, lvl]);
+                        } else {
+                          setLevels(levels.filter(l => l !== lvl));
+                        }
+                      }}
+                      style={{ accentColor: '#6366f1' }}
+                    />
+                    <span style={{ color: 'white', fontSize: '14px' }}>{lvl}</span>
+                  </label>
+                ))}
+              </div>
+              {levels.length === 0 && <span style={{ color: '#f87171', fontSize: '12px', marginTop: '4px' }}>Please select at least one level</span>}
             </div>
           )}
 
@@ -259,11 +265,11 @@ export default function CreateUserModal({ onClose, onSuccess }) {
             </button>
             <button
               type="submit"
-              disabled={loading}
+              disabled={loading || (role === 'teacher' && levels.length === 0)}
               style={{
                 ...styles.submitBtn,
-                opacity: loading ? 0.6 : 1,
-                cursor: loading ? 'not-allowed' : 'pointer',
+                opacity: (loading || (role === 'teacher' && levels.length === 0)) ? 0.6 : 1,
+                cursor: (loading || (role === 'teacher' && levels.length === 0)) ? 'not-allowed' : 'pointer',
               }}
               onMouseEnter={(e) => {
                 if (!loading) {

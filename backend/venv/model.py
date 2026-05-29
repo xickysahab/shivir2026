@@ -11,7 +11,7 @@ class User(db.Model):
     login_id = db.Column(db.String(80), unique=True, nullable=False)
     password_hash = db.Column(db.String(200), nullable=False)
     role = db.Column(db.String(20), nullable=False)          # 'teacher' or 'mentor'
-    level = db.Column(db.String(50), nullable=True)          # for teacher level assignment
+    level = db.Column(db.String(255), nullable=True)         # for teacher level assignment
     photo = db.Column(db.LargeBinary, nullable=True)         # BYTEA in PostgreSQL
     created_at = db.Column(
         db.DateTime,

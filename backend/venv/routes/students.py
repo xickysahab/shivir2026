@@ -80,8 +80,15 @@ def get_students():
     query = Student.query
     
     if user_role == 'teacher' and assigned_level:
-        query = query.filter(Student.level == assigned_level)
-        level = assigned_level
+        assigned_levels = [l.strip() for l in assigned_level.split(',')]
+        query = query.filter(Student.level.in_(assigned_levels))
+        
+        # If specific level is requested, ensure it's allowed or block
+        if level and level != 'All':
+            if level in assigned_levels:
+                query = query.filter(Student.level == level)
+            else:
+                query = query.filter(Student.level == 'none') # Prevent access
     
     if search:
         from sqlalchemy import or_
@@ -92,7 +99,7 @@ def get_students():
             Student.father_name.ilike(search_pattern)
         ))
         
-    if level and level != 'All':
+    if level and level != 'All' and user_role != 'teacher':
         query = query.filter(Student.level == level)
         
     if gender and gender != 'All':
