@@ -25,12 +25,18 @@ def get_attendance():
 
     level = request.args.get('level', '')
     
-    if user_role == 'teacher' and assigned_level:
-        level = assigned_level
-    
     query = Student.query
-    if level and level != 'All':
-        query = query.filter(Student.level == level)
+    if user_role == 'teacher' and assigned_level:
+        assigned_levels = [l.strip() for l in assigned_level.split(',')]
+        query = query.filter(Student.level.in_(assigned_levels))
+        if level and level != 'All':
+            if level in assigned_levels:
+                query = query.filter(Student.level == level)
+            else:
+                query = query.filter(Student.level == 'none')
+    else:
+        if level and level != 'All':
+            query = query.filter(Student.level == level)
         
     students = query.all()
     students.sort(key=natural_sort_key)
@@ -107,8 +113,10 @@ def save_attendance():
             if not student:
                 continue
 
-            if user_role == 'teacher' and assigned_level and student.level != assigned_level:
-                continue
+            if user_role == 'teacher' and assigned_level:
+                assigned_levels = [l.strip() for l in assigned_level.split(',')]
+                if student.level not in assigned_levels:
+                    continue
 
             existing = Attendance.query.filter_by(student_id=s_id, date=target_date).first()
             if status is None:
@@ -157,13 +165,18 @@ def get_attendance_summary():
         year = str(now.year)
         month = str(now.month).zfill(2)
         
-    level = request.args.get('level', '')
-    if user_role == 'teacher' and assigned_level:
-        level = assigned_level
-        
     query = Student.query
-    if level and level != 'All':
-        query = query.filter(Student.level == level)
+    if user_role == 'teacher' and assigned_level:
+        assigned_levels = [l.strip() for l in assigned_level.split(',')]
+        query = query.filter(Student.level.in_(assigned_levels))
+        if level and level != 'All':
+            if level in assigned_levels:
+                query = query.filter(Student.level == level)
+            else:
+                query = query.filter(Student.level == 'none')
+    else:
+        if level and level != 'All':
+            query = query.filter(Student.level == level)
         
     students = query.all()
     student_ids = [s.id for s in students]
@@ -215,9 +228,10 @@ def get_student_attendance(student_id):
     user_role = claims.get('role')
     assigned_level = claims.get('assigned_level')
     
-    if user_role == 'teacher':
+    if user_role == 'teacher' and assigned_level:
+        assigned_levels = [l.strip() for l in assigned_level.split(',')]
         student = Student.query.get(student_id)
-        if not student or student.level != assigned_level:
+        if not student or student.level not in assigned_levels:
             return jsonify({'success': False, 'message': 'Access forbidden'}), 403
             
     records = Attendance.query.filter_by(student_id=student_id).all()
