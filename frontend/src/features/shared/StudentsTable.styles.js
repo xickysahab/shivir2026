@@ -20,6 +20,8 @@ const styles = {
   actionBtns: { display: 'flex', gap: '4px' },
   btnIcon: { background: 'transparent', border: 'none', cursor: 'pointer', fontSize: '16px', padding: '6px', opacity: 0.8, borderRadius: '8px' },
   btnIconDelete: { background: 'transparent', border: 'none', cursor: 'pointer', fontSize: '16px', padding: '6px', opacity: 0.8, borderRadius: '8px' },
+  btnIconKitActive: { background: 'rgba(16, 185, 129, 0.2)', border: '1px solid rgba(16, 185, 129, 0.4)', cursor: 'pointer', fontSize: '16px', padding: '6px', opacity: 1, borderRadius: '8px', filter: 'drop-shadow(0 0 4px rgba(16, 185, 129, 0.4))' },
+  btnIconKitInactive: { background: 'transparent', border: 'none', cursor: 'pointer', fontSize: '16px', padding: '6px', opacity: 0.4, filter: 'grayscale(100%)', borderRadius: '8px' },
   
   // Pagination UI Styles
   paginationBar: {

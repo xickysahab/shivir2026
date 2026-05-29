@@ -36,6 +36,7 @@ class Student(db.Model):
     pin_code = db.Column(db.String(20), nullable=False)
     level = db.Column(db.String(50), nullable=False)
     points = db.Column(db.Integer, default=0, nullable=False)
+    kit_received = db.Column(db.Boolean, default=False, nullable=False)
     created_at = db.Column(
         db.DateTime,
         default=lambda: datetime.now(timezone.utc),

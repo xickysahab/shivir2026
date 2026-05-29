@@ -247,6 +247,25 @@ export default function StudentsTable() {
     }
   };
 
+  const handleKitToggle = async (student) => {
+    try {
+      const newStatus = !student.kit_received;
+      const res = await fetch(`/api/students/${student.id}/kit`, {
+        method: 'PATCH',
+        headers,
+        body: JSON.stringify({ kit_received: newStatus })
+      });
+      const data = await res.json();
+      if (data.success) {
+        setStudents(prev => prev.map(s => s.id === student.id ? { ...s, kit_received: newStatus } : s));
+      } else {
+        alert(data.message);
+      }
+    } catch (err) {
+      alert('Error updating kit status');
+    }
+  };
+
   const handleFileUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -291,6 +310,7 @@ export default function StudentsTable() {
             </div>
           </div>
           <div style={styles.actionBtns}>
+            <button className={`btn-action ${s.kit_received ? 'kit-active' : ''}`} style={s.kit_received ? styles.btnIconKitActive : styles.btnIconKitInactive} onClick={() => handleKitToggle(s)} title="Toggle Kit Status">🎒</button>
             <button className="btn-action" style={styles.btnIcon} onClick={() => openDetailsModal(s)} title="View Details">ℹ️</button>
             <button className="btn-action" style={styles.btnIcon} onClick={() => openPointsModal(s)} title="Update Points">🏆</button>
             <button className="btn-action" style={styles.btnIcon} onClick={() => openEditModal(s)} title="Edit">✏️</button>
@@ -426,6 +446,7 @@ export default function StudentsTable() {
                     <td style={styles.td}>{s.mobile}</td>
                     <td style={styles.td}>
                       <div style={styles.actionBtns}>
+                        <button className={`btn-action ${s.kit_received ? 'kit-active' : ''}`} style={s.kit_received ? styles.btnIconKitActive : styles.btnIconKitInactive} onClick={() => handleKitToggle(s)} title="Toggle Kit Status">🎒</button>
                         <button className="btn-action" style={styles.btnIcon} onClick={() => openDetailsModal(s)} title="View Details">ℹ️</button>
                         <button className="btn-action" style={styles.btnIcon} onClick={() => openPointsModal(s)} title="Update Points">🏆</button>
                         <button className="btn-action" style={styles.btnIcon} onClick={() => openEditModal(s)} title="Edit">✏️</button>

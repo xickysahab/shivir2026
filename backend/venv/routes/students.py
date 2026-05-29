@@ -134,7 +134,8 @@ def get_students():
         'address': s.address,
         'pin_code': s.pin_code,
         'level': s.level,
-        'points': s.points
+        'points': s.points,
+        'kit_received': s.kit_received
     } for s in paginated_students]
     
     return jsonify({
@@ -189,7 +190,8 @@ def add_student():
             address=data.get('address'),
             pin_code=data.get('pin_code'),
             level=data.get('level'),
-            points=data.get('points', 0)
+            points=data.get('points', 0),
+            kit_received=data.get('kit_received', False)
         )
         db.session.add(new_student)
         log_activity("ADD_STUDENT", f"Added student: {new_student.name} (Roll No: {new_roll_no})")
@@ -281,6 +283,28 @@ def update_student_points(id):
             db.session.commit()
             return jsonify({'success': True, 'message': 'Points updated successfully!'}), 200
         return jsonify({'success': False, 'message': 'Points value missing'}), 400
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+
+@students_bp.route('/<int:id>/kit', methods=['PATCH'])
+@role_required(['admin', 'teacher', 'mentor'])
+def toggle_kit_received(id):
+    data = request.get_json()
+    student = Student.query.get(id)
+    if not student:
+        return jsonify({'success': False, 'message': 'Student not found'}), 404
+
+    try:
+        kit_received = data.get('kit_received')
+        if kit_received is not None:
+            student.kit_received = bool(kit_received)
+            status_text = "received" if kit_received else "not received"
+            log_activity("UPDATE_KIT", f"Marked kit as {status_text} for {student.name} (Roll No: {student.roll_no})")
+            db.session.commit()
+            return jsonify({'success': True, 'message': f'Kit status updated to {status_text}!'}), 200
+        return jsonify({'success': False, 'message': 'Kit status missing'}), 400
     except Exception as e:
         db.session.rollback()
         return jsonify({'success': False, 'message': str(e)}), 500
@@ -390,7 +414,8 @@ def bulk_upload():
                 address=row.get('address', ''),
                 pin_code=row.get('pin_code', ''),
                 level=level_str,
-                points=int(row.get('points', 0)) if row.get('points') else 0
+                points=int(row.get('points', 0)) if row.get('points') else 0,
+                kit_received=str(row.get('kit_received', '')).strip().lower() in ['true', '1', 'yes']
             )
             db.session.add(new_student)
             added_count += 1
