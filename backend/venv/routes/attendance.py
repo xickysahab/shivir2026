@@ -164,6 +164,8 @@ def get_attendance_summary():
         now = datetime.now(timezone.utc) + timedelta(hours=5, minutes=30)
         year = str(now.year)
         month = str(now.month).zfill(2)
+
+    level = request.args.get('level', '')
         
     query = Student.query
     if user_role == 'teacher' and assigned_level:

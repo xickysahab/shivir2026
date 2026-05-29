@@ -37,6 +37,17 @@ def create_app():
     # Create tables on first request
     with app.app_context():
         db.create_all()
+        
+        # Auto-migrate: ensure kit_received column exists on students table
+        # db.create_all() doesn't add new columns to existing tables
+        from sqlalchemy import text, inspect
+        inspector = inspect(db.engine)
+        columns = [col['name'] for col in inspector.get_columns('students')]
+        if 'kit_received' not in columns:
+            db.session.execute(text(
+                "ALTER TABLE students ADD COLUMN kit_received BOOLEAN NOT NULL DEFAULT FALSE;"
+            ))
+            db.session.commit()
 
     @app.errorhandler(Exception)
     def handle_exception(e):

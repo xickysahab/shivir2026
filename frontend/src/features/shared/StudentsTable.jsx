@@ -143,10 +143,11 @@ export default function StudentsTable() {
   };
 
   const openAddModal = () => {
+    const teacherLevels = userLevel ? userLevel.split(',').map(l => l.trim()) : [];
     setFormData({
       roll_no: '', name: '', mobile: '', father_name: '',
       gender: 'Male', age: '', address: '', pin_code: '', 
-      level: role === 'teacher' ? (userLevel || 'Level 1') : 'प्रौढ़ कक्षा', 
+      level: role === 'teacher' ? (teacherLevels[0] || 'Level 1') : 'प्रौढ़ कक्षा', 
       points: 0
     });
     setShowAddModal(true);
@@ -381,19 +382,33 @@ export default function StudentsTable() {
               <option value="Level 4">Level 4</option>
               <option value="Level 5">Level 5</option>
             </select>
-          ) : (
-            <select 
-              style={{
-                ...styles.filterSelect,
-                backgroundColor: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.4)', cursor: 'not-allowed', borderColor: 'transparent', appearance: 'none', WebkitAppearance: 'none',
-                ...(isMobile ? {padding: '8px 10px', fontSize: '12px', borderRadius: '8px', flex: 1} : {})
-              }}
-              value={userLevel} 
-              disabled
-            >
-              <option value={userLevel}>{userLevel || 'Assigned Level'}</option>
-            </select>
-          )}
+          ) : (() => {
+            const assignedLevels = userLevel ? userLevel.split(',').map(l => l.trim()) : [];
+            return assignedLevels.length > 1 ? (
+              <select 
+                style={{...styles.filterSelect, ...(isMobile ? {padding: '8px 10px', fontSize: '12px', borderRadius: '8px', flex: 1} : {})}}
+                value={filterLevel} 
+                onChange={(e) => setFilterLevel(e.target.value)}
+              >
+                <option value="All">All My Levels</option>
+                {assignedLevels.map(lvl => (
+                  <option key={lvl} value={lvl}>{lvl}</option>
+                ))}
+              </select>
+            ) : (
+              <select 
+                style={{
+                  ...styles.filterSelect,
+                  backgroundColor: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.4)', cursor: 'not-allowed', borderColor: 'transparent', appearance: 'none', WebkitAppearance: 'none',
+                  ...(isMobile ? {padding: '8px 10px', fontSize: '12px', borderRadius: '8px', flex: 1} : {})
+                }}
+                value={userLevel} 
+                disabled
+              >
+                <option value={userLevel}>{userLevel || 'Assigned Level'}</option>
+              </select>
+            );
+          })()}
           <select 
             style={{...styles.filterSelect, ...(isMobile ? {padding: '8px 10px', fontSize: '12px', borderRadius: '8px', flex: 1} : {})}} 
             value={filterGender} 
@@ -549,18 +564,29 @@ export default function StudentsTable() {
               </div>
               <div style={styles.formGroup}>
                 <label style={styles.label}>Level</label>
-                <select 
-                  style={{
-                    ...styles.input,
-                    ...(role === 'teacher' ? { backgroundColor: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.4)', cursor: 'not-allowed', borderColor: 'transparent', appearance: 'none', WebkitAppearance: 'none' } : {})
-                  }}
-                  name="level" 
-                  value={formData.level} 
-                  onChange={handleInputChange}
-                  disabled={role === 'teacher'}
-                >
-                  <option>प्रौढ़ कक्षा</option><option>Level 1</option><option>Level 2</option><option>Level 3</option><option>Level 4</option><option>Level 5</option>
-                </select>
+                {(() => {
+                  const teacherLevels = userLevel ? userLevel.split(',').map(l => l.trim()) : [];
+                  const isMultiLevel = role === 'teacher' && teacherLevels.length > 1;
+                  const isSingleLevel = role === 'teacher' && teacherLevels.length <= 1;
+                  return (
+                    <select 
+                      style={{
+                        ...styles.input,
+                        ...(isSingleLevel ? { backgroundColor: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.4)', cursor: 'not-allowed', borderColor: 'transparent', appearance: 'none', WebkitAppearance: 'none' } : {})
+                      }}
+                      name="level" 
+                      value={formData.level} 
+                      onChange={handleInputChange}
+                      disabled={isSingleLevel}
+                    >
+                      {isMultiLevel ? (
+                        teacherLevels.map(lvl => <option key={lvl} value={lvl}>{lvl}</option>)
+                      ) : (
+                        <><option>प्रौढ़ कक्षा</option><option>Level 1</option><option>Level 2</option><option>Level 3</option><option>Level 4</option><option>Level 5</option></>
+                      )}
+                    </select>
+                  );
+                })()}
               </div>
               <div style={styles.modalActions}>
                 <button type="button" style={styles.btnCancel} onClick={() => { setShowAddModal(false); setShowEditModal(false); }}>Cancel</button>
