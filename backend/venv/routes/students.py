@@ -10,6 +10,37 @@ from utils import role_required, log_activity, natural_sort_key
 
 students_bp = Blueprint('students', __name__)
 
+def normalize_level(raw_level):
+    if not raw_level:
+        return 'Level 1'
+    
+    val = str(raw_level).strip().lower()
+    
+    # Check for adult / praudh class
+    if any(x in val for x in ['प्रौढ़', 'praudh', 'adult', 'prouch', 'proudh', 'pradh']):
+        return 'प्रौढ़ कक्षा'
+        
+    # Standardize spaces and hyphens, remove them
+    val_clean = val.replace(' ', '').replace('-', '').replace('_', '')
+    
+    # Try to find numbers 1 to 5
+    if 'level' in val_clean:
+        match = re.search(r'level(\d)', val_clean)
+        if match:
+            num = match.group(1)
+            if num in ['1', '2', '3', '4', '5']:
+                return f'Level {num}'
+                
+    # Direct fallback search for digits
+    match_digit = re.search(r'(\d)', val_clean)
+    if match_digit:
+        num = match_digit.group(1)
+        if num in ['1', '2', '3', '4', '5']:
+            return f'Level {num}'
+            
+    # Default fallback
+    return 'Level 1'
+
 def sync_roll_numbers(prefix):
     students = Student.query.all()
     level_students = []
@@ -328,9 +359,7 @@ def bulk_upload():
             if not name:
                 continue
                 
-            level_str = row.get('level', '').strip()
-            if level_str and level_str.startswith('Level -'):
-                level_str = level_str.replace('Level -', 'Level ')
+            level_str = normalize_level(row.get('level', ''))
             
             roll_no = row.get('roll_no', '').strip()
             
