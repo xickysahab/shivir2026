@@ -295,21 +295,58 @@ def bulk_upload():
         stream = io.StringIO(file.stream.read().decode("UTF8"), newline=None)
         csv_input = csv.DictReader(stream)
         
+        # Load all students to calculate suffixes locally
+        students = Student.query.all()
+        
+        # Map levels to prefix roll numbers
+        level_map = {
+            'Level 1': 'A',
+            'Level 2': 'B',
+            'Level 3': 'C',
+            'Level 4': 'D',
+            'Level 5': 'E',
+            'प्रौढ़ कक्षा': 'P'
+        }
+        
+        # Track the maximum suffix for each prefix in-memory to assign sequentially
+        prefix_suffixes = {}
+        for level, prefix in level_map.items():
+            max_suffix = 0
+            for s in students:
+                if s.roll_no:
+                    match = re.match(rf'^{prefix}(\d+)$', s.roll_no.strip())
+                    if match:
+                        val = int(match.group(1))
+                        if val > max_suffix:
+                            max_suffix = val
+            prefix_suffixes[prefix] = max_suffix
+
         added_count = 0
         for row in csv_input:
-            roll_no = row.get('roll_no')
-            if not roll_no: continue
+            # Skip empty rows (require at least a name)
+            name = row.get('name', '').strip()
+            if not name:
+                continue
+                
+            level_str = row.get('level', '').strip()
+            if level_str and level_str.startswith('Level -'):
+                level_str = level_str.replace('Level -', 'Level ')
             
+            roll_no = row.get('roll_no', '').strip()
+            
+            # If roll number is not provided, auto-assign sequentially
+            if not roll_no:
+                prefix = level_map.get(level_str, 'A')
+                prefix_suffixes[prefix] += 1
+                roll_no = f"{prefix}{prefix_suffixes[prefix]}"
+            
+            # Skip if student with this roll number already exists
             if Student.query.filter_by(roll_no=roll_no).first():
                 continue
                 
-            level_str = row.get('level', '')
-            if level_str and level_str.startswith('Level -'):
-                level_str = level_str.replace('Level -', 'Level ')
-                
             new_student = Student(
                 roll_no=roll_no,
-                name=row.get('name', ''),
+                name=name,
                 mobile=row.get('mobile', ''),
                 father_name=row.get('father_name', ''),
                 gender=row.get('gender', ''),
