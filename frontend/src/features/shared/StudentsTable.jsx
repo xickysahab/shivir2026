@@ -295,6 +295,64 @@ export default function StudentsTable() {
     e.target.value = '';
   };
 
+  const handleExportCSV = async () => {
+    try {
+      const query = new URLSearchParams({
+        search: searchTerm,
+        level: filterLevel,
+        gender: filterGender,
+        all: true // fetch all matching filtered results instead of just paginated page
+      }).toString();
+
+      const res = await fetch(`/api/students/?${query}`, { headers });
+      const data = await res.json();
+      
+      if (data.success) {
+        const studentList = data.data;
+        if (studentList.length === 0) {
+          alert('No students found to export.');
+          return;
+        }
+
+        // Generate CSV content
+        const csvHeaders = ['Roll No', 'Name', 'Mobile', 'Father Name', 'Gender', 'Age', 'Address', 'Pin Code', 'Level', 'Points', 'Kit Received'];
+        
+        const csvRows = studentList.map(s => {
+          return [
+            `"${s.roll_no || ''}"`,
+            `"${s.name || ''}"`,
+            `"${s.mobile || ''}"`,
+            `"${s.father_name || ''}"`,
+            `"${s.gender || ''}"`,
+            `"${s.age || ''}"`,
+            `"${s.address || ''}"`,
+            `"${s.pin_code || ''}"`,
+            `"${s.level || ''}"`,
+            `"${s.points || 0}"`,
+            `"${s.kit_received ? 'Yes' : 'No'}"`
+          ].join(',');
+        });
+
+        const csvContent = [csvHeaders.join(','), ...csvRows].join('\n');
+        
+        // Create Blob and trigger download
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.setAttribute('href', url);
+        link.setAttribute('download', `shivir_students_${new Date().toISOString().split('T')[0]}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      } else {
+        alert(data.message || 'Error fetching data for export.');
+      }
+    } catch (err) {
+      alert('Error exporting CSV.');
+      console.error(err);
+    }
+  };
+
   // Mobile card renderer
   const renderMobileCards = () => {
     if (loading) return <MobileSkeletonCards count={4} />;
@@ -342,8 +400,11 @@ export default function StudentsTable() {
         <h2 style={{...styles.title, ...(isMobile ? {fontSize: '16px'} : {})}}>Students Management</h2>
         <div style={{...styles.actions, ...(isMobile ? {gap: '6px'} : {})}}>
           <button style={{...styles.btnPrimary, ...(isMobile ? {padding: '7px 12px', fontSize: '12px', borderRadius: '8px'} : {})}} onClick={openAddModal}>+ Add</button>
+          <button style={{...styles.btnSecondary, ...(isMobile ? {padding: '7px 12px', fontSize: '12px', borderRadius: '8px'} : {})}} onClick={handleExportCSV}>
+            📥 Export
+          </button>
           <button style={{...styles.btnSecondary, ...(isMobile ? {padding: '7px 12px', fontSize: '12px', borderRadius: '8px'} : {})}} onClick={() => fileInputRef.current.click()}>
-            CSV
+            📤 Import
           </button>
           <input 
             type="file" 
