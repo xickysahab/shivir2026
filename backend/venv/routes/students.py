@@ -354,8 +354,37 @@ def bulk_upload():
         return jsonify({'success': False, 'message': 'Only CSV files are allowed'}), 400
 
     try:
-        stream = io.StringIO(file.stream.read().decode("UTF8"), newline=None)
-        csv_input = csv.DictReader(stream)
+        content = file.stream.read().decode("UTF8")
+        stream = io.StringIO(content, newline=None)
+        
+        try:
+            dialect = csv.Sniffer().sniff(content[:1024])
+            reader = csv.reader(stream, dialect)
+        except csv.Error:
+            stream.seek(0)
+            reader = csv.reader(stream)
+            dialect = 'excel'
+
+        headers = next(reader, None)
+        if headers:
+            normalized_headers = []
+            for h in headers:
+                h_clean = h.lower().strip().replace(' ', '_').replace('.', '')
+                if 'mobile' in h_clean or 'phone' in h_clean:
+                    h_clean = 'mobile'
+                elif 'roll' in h_clean:
+                    h_clean = 'roll_no'
+                elif 'pin' in h_clean:
+                    h_clean = 'pin_code'
+                elif 'father' in h_clean:
+                    h_clean = 'father_name'
+                elif not h_clean:
+                    h_clean = 'unknown'
+                normalized_headers.append(h_clean)
+            
+            csv_input = csv.DictReader(stream, fieldnames=normalized_headers, dialect=dialect)
+        else:
+            csv_input = []
         
         # Load all students to calculate suffixes locally
         students = Student.query.all()
