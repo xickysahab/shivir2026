@@ -6,6 +6,7 @@ from flask_jwt_extended import get_jwt
 from extensions import db
 from model import Student
 import re
+import uuid
 from utils import role_required, log_activity, natural_sort_key
 
 students_bp = Blueprint('students', __name__)
@@ -52,6 +53,12 @@ def sync_roll_numbers(prefix):
     
     # Sort by current numeric suffix
     level_students.sort(key=lambda item: item[1])
+    
+    # Assign temporary roll numbers to avoid UniqueViolation constraint errors during shift
+    for idx, (s, _) in enumerate(level_students):
+        s.roll_no = f"temp_{uuid.uuid4().hex}"
+        
+    db.session.flush()
     
     # Re-assign sequentially starting from 1
     for idx, (s, _) in enumerate(level_students):
