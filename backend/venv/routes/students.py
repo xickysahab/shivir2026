@@ -107,8 +107,8 @@ def get_students():
         
     students = query.all()
     
-    # Sort by id so newly added students always appear at the end (Insertion order)
-    students.sort(key=lambda s: s.id)
+    # Proper ascending sort by roll_no using shared natural sort key
+    students.sort(key=natural_sort_key)
 
     total_count = len(students)
     start_index = (page - 1) * limit
