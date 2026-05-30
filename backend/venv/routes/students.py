@@ -107,8 +107,8 @@ def get_students():
         
     students = query.all()
     
-    # Proper ascending sort by roll_no using shared natural sort key
-    students.sort(key=natural_sort_key)
+    # Sort by id so newly added students always appear at the end (Insertion order)
+    students.sort(key=lambda s: s.id)
 
     total_count = len(students)
     start_index = (page - 1) * limit
@@ -155,6 +155,22 @@ def get_students():
 def add_student():
     data = request.get_json()
     try:
+        name = data.get('name')
+        mobile = data.get('mobile')
+        
+        if not data.get('force'):
+            from sqlalchemy import func
+            existing = Student.query.filter(
+                func.lower(func.trim(Student.name)) == str(name).strip().lower(),
+                func.trim(Student.mobile) == str(mobile).strip()
+            ).first()
+            if existing:
+                return jsonify({
+                    'success': False, 
+                    'requires_confirmation': True, 
+                    'duplicates': [{'name': existing.name, 'mobile': existing.mobile}]
+                }), 200
+
         # Determine prefix based on student's level
         level = data.get('level')
         level_map = {
@@ -412,8 +428,34 @@ def bulk_upload():
                             max_suffix = val
             prefix_suffixes[prefix] = max_suffix
 
+        csv_rows = list(csv_input)
+
+        force = request.form.get('force') == 'true'
+        if not force:
+            duplicates_found = []
+            existing_map = {}
+            for s in students:
+                n = str(s.name).strip().lower() if s.name else ''
+                m = str(s.mobile).strip() if s.mobile else ''
+                if n and m:
+                    existing_map[(n, m)] = True
+            
+            for row in csv_rows:
+                name = row.get('name', '').strip()
+                mobile = row.get('mobile', '').strip()
+                if name and mobile:
+                    if (name.lower(), mobile) in existing_map:
+                        duplicates_found.append({'name': name, 'mobile': mobile})
+                        
+            if duplicates_found:
+                return jsonify({
+                    'success': False, 
+                    'requires_confirmation': True, 
+                    'duplicates': duplicates_found
+                }), 200
+
         added_count = 0
-        for row in csv_input:
+        for row in csv_rows:
             # Skip empty rows (require at least a name)
             name = row.get('name', '').strip()
             if not name:

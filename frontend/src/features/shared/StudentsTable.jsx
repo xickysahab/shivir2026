@@ -64,6 +64,12 @@ export default function StudentsTable() {
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [currentStudent, setCurrentStudent] = useState(null);
 
+  // Duplication warning state
+  const [showDuplicateWarning, setShowDuplicateWarning] = useState(false);
+  const [duplicateList, setDuplicateList] = useState([]);
+  const [pendingUploadFile, setPendingUploadFile] = useState(null);
+  const [pendingAddFormData, setPendingAddFormData] = useState(null);
+
   // Form state
   const [formData, setFormData] = useState({
     roll_no: '', name: '', mobile: '', father_name: '',
@@ -88,6 +94,7 @@ export default function StudentsTable() {
       setShowEditModal(false);
       setShowPointsModal(false);
       setShowDetailsModal(false);
+      setShowDuplicateWarning(false);
     }
   }, []);
 
@@ -170,17 +177,25 @@ export default function StudentsTable() {
     setShowDetailsModal(true);
   };
 
-  const handleAddSubmit = async (e) => {
-    e.preventDefault();
+  const handleAddSubmit = async (e, force = false) => {
+    if (e) e.preventDefault();
     try {
+      const payload = { ...formData, force };
       const res = await fetch('/api/students/', {
         method: 'POST',
         headers,
-        body: JSON.stringify(formData)
+        body: JSON.stringify(payload)
       });
       const data = await res.json();
-      if (data.success) {
+      
+      if (data.requires_confirmation) {
+        setDuplicateList(data.duplicates);
+        setPendingAddFormData(formData);
+        setPendingUploadFile(null);
+        setShowDuplicateWarning(true);
+      } else if (data.success) {
         setShowAddModal(false);
+        setShowDuplicateWarning(false);
         fetchStudents();
       } else {
         alert(data.message);
@@ -267,12 +282,13 @@ export default function StudentsTable() {
     }
   };
 
-  const handleFileUpload = async (e) => {
-    const file = e.target.files[0];
+  const handleFileUpload = async (e, force = false, fileToUpload = null) => {
+    const file = fileToUpload || e?.target?.files?.[0];
     if (!file) return;
     
-    const formData = new FormData();
-    formData.append('file', file);
+    const uploadData = new FormData();
+    uploadData.append('file', file);
+    if (force) uploadData.append('force', 'true');
     
     try {
       const res = await fetch('/api/students/bulk-upload', {
@@ -280,11 +296,19 @@ export default function StudentsTable() {
         headers: {
           'Authorization': `Bearer ${token}`
         },
-        body: formData
+        body: uploadData
       });
       const data = await res.json();
-      if (data.success) {
+      
+      if (data.requires_confirmation) {
+        setDuplicateList(data.duplicates);
+        setPendingUploadFile(file);
+        setPendingAddFormData(null);
+        setShowDuplicateWarning(true);
+      } else if (data.success) {
         alert(data.message || 'File uploaded successfully');
+        setShowDuplicateWarning(false);
+        setPendingUploadFile(null);
         fetchStudents();
       } else {
         alert(data.message || data.msg || 'Failed to upload CSV. Please make sure you are logged in properly.');
@@ -292,7 +316,21 @@ export default function StudentsTable() {
     } catch (err) {
       alert('Error uploading file');
     }
-    e.target.value = '';
+    if (e?.target) e.target.value = '';
+  };
+
+  const confirmDuplicateAction = () => {
+    if (pendingUploadFile) {
+      handleFileUpload(null, true, pendingUploadFile);
+    } else if (pendingAddFormData) {
+      handleAddSubmit(null, true);
+    }
+  };
+  
+  const cancelDuplicateAction = () => {
+    setShowDuplicateWarning(false);
+    setPendingUploadFile(null);
+    setPendingAddFormData(null);
   };
 
   const handleExportCSV = async () => {
@@ -683,6 +721,51 @@ export default function StudentsTable() {
           student={currentStudent} 
           onClose={() => setShowDetailsModal(false)} 
         />
+      )}
+
+      {/* Duplicate Warning Modal */}
+      {showDuplicateWarning && (
+        <div style={{...styles.modalOverlay, zIndex: 1100}} className="modal-overlay-enter">
+          <div style={{...styles.modal, maxWidth: '500px'}} className="modal-enter">
+            <h3 style={{...styles.modalTitle, color: '#f59e0b', display: 'flex', alignItems: 'center', gap: '8px'}}>
+              <span>⚠️</span> Duplicate Students Found
+            </h3>
+            <p style={{color: 'rgba(255,255,255,0.7)', fontSize: '14px', marginBottom: '16px', lineHeight: '1.5'}}>
+              The following students already exist in the database (matching both Name and Mobile Number). Do you want to add them anyway?
+            </p>
+            
+            <div style={{
+              background: 'rgba(0,0,0,0.2)', 
+              borderRadius: '8px', 
+              padding: '12px', 
+              maxHeight: '200px', 
+              overflowY: 'auto',
+              marginBottom: '20px',
+              border: '1px solid rgba(245, 158, 11, 0.2)'
+            }}>
+              {duplicateList.map((dup, idx) => (
+                <div key={idx} style={{
+                  display: 'flex', 
+                  justifyContent: 'space-between', 
+                  padding: '8px 0',
+                  borderBottom: idx < duplicateList.length - 1 ? '1px solid rgba(255,255,255,0.05)' : 'none'
+                }}>
+                  <strong style={{color: '#fff'}}>{dup.name}</strong>
+                  <span style={{color: 'rgba(255,255,255,0.5)'}}>{dup.mobile}</span>
+                </div>
+              ))}
+            </div>
+
+            <div style={styles.modalActions}>
+              <button type="button" style={{...styles.btnCancel, flex: 1}} onClick={cancelDuplicateAction}>
+                Cancel
+              </button>
+              <button type="button" style={{...styles.btnSave, background: '#f59e0b', color: '#000', flex: 1}} onClick={confirmDuplicateAction}>
+                Yes, Save Anyway
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
