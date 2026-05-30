@@ -167,9 +167,10 @@ def add_student():
         
         if not data.get('force'):
             from sqlalchemy import func
+            mobile_clean = str(mobile).strip().replace(' ', '').replace('-', '')
             existing = Student.query.filter(
                 func.lower(func.trim(Student.name)) == str(name).strip().lower(),
-                func.trim(Student.mobile) == str(mobile).strip()
+                func.replace(func.replace(func.trim(Student.mobile), ' ', ''), '-', '') == mobile_clean
             ).first()
             if existing:
                 return jsonify({
@@ -443,16 +444,17 @@ def bulk_upload():
             existing_map = {}
             for s in students:
                 n = str(s.name).strip().lower() if s.name else ''
-                m = str(s.mobile).strip() if s.mobile else ''
+                m = str(s.mobile).strip().replace(' ', '').replace('-', '') if s.mobile else ''
                 if n and m:
                     existing_map[(n, m)] = True
             
             for row in csv_rows:
                 name = row.get('name', '').strip()
-                mobile = row.get('mobile', '').strip()
-                if name and mobile:
-                    if (name.lower(), mobile) in existing_map:
-                        duplicates_found.append({'name': name, 'mobile': mobile})
+                raw_mobile = str(row.get('mobile', '')).strip()
+                clean_mobile = raw_mobile.replace(' ', '').replace('-', '')
+                if name and clean_mobile:
+                    if (name.lower(), clean_mobile) in existing_map:
+                        duplicates_found.append({'name': name, 'mobile': raw_mobile})
                         
             if duplicates_found:
                 return jsonify({
