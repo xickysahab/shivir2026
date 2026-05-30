@@ -13,3 +13,6 @@ backend/venv/share/
 **/__pycache__/
 *.pyc
 .DS_Store
+
+# Environment files with secrets
+**/.env

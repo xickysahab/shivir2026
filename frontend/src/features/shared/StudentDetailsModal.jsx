@@ -69,7 +69,7 @@ export default function StudentDetailsModal({ student, onClose }) {
               </div>
               <div style={styles.infoItem}>
                 <span style={styles.infoLabel}>Contact</span>
-                <span style={styles.infoValue}>{student.phone || 'N/A'}</span>
+                <span style={styles.infoValue}>{student.mobile || 'N/A'}</span>
               </div>
             </div>
           </div>
