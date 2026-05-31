@@ -168,33 +168,30 @@ export default function TeacherDashboard() {
   const renderAttendanceContent = () => (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
       <div style={isMobile ? styles.mobileControlPanel : styles.controlPanel}>
-        <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', width: '100%' }}>
-          <div style={{...styles.datePickerWrapper, flex: 1, minWidth: '150px'}}>
-            <label style={styles.controlLabel}>Select Date</label>
+        <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', width: '100%', alignItems: 'flex-start' }}>
+          <div style={{ flex: '1 1 200px' }}>
+            <input 
+              type="text" 
+              placeholder="🔍 Search students by name or roll..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              style={styles.modernInput}
+            />
+          </div>
+          <div style={{ flex: '1 1 140px' }}>
             <input 
               type="date" 
               value={selectedDate}
               onChange={(e) => setSelectedDate(e.target.value)}
-              style={{...styles.dateInput, width: '100%'}}
+              style={styles.modernInput}
               max={role !== 'admin' ? localToday : undefined}
               disabled={role !== 'admin'}
             />
             {role !== 'admin' && (
-              <span style={{fontSize: '12px', color: 'rgba(255,255,255,0.4)', marginTop: '4px'}}>Locked to today</span>
+              <div style={{fontSize: '10px', color: 'rgba(255,255,255,0.4)', marginTop: '6px', textAlign: 'center'}}>Locked to today</div>
             )}
           </div>
-          <div style={{...styles.datePickerWrapper, flex: 2, minWidth: '180px'}}>
-            <label style={styles.controlLabel}>Search Student</label>
-            <input 
-              type="text" 
-              placeholder="Search name, roll no..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              style={{...styles.dateInput, width: '100%'}}
-            />
-          </div>
-          <div style={{...styles.datePickerWrapper, flex: 1, minWidth: '130px'}}>
-            <label style={styles.controlLabel}>Sort By</label>
+          <div style={{ flex: '1 1 140px' }}>
             <select 
               value={`${sortBy}-${sortOrder}`} 
               onChange={(e) => {
@@ -202,13 +199,13 @@ export default function TeacherDashboard() {
                 setSortBy(newSortBy);
                 setSortOrder(newSortOrder);
               }}
-              style={{...styles.dateInput, width: '100%'}}
+              style={styles.modernInput}
             >
-              <option value="roll_no-asc">Roll No (Asc)</option>
-              <option value="roll_no-desc">Roll No (Desc)</option>
-              <option value="name-asc">Name (A-Z)</option>
-              <option value="name-desc">Name (Z-A)</option>
-              <option value="status-asc">Status</option>
+              <option value="roll_no-asc">Sort: Roll No (Asc)</option>
+              <option value="roll_no-desc">Sort: Roll No (Desc)</option>
+              <option value="name-asc">Sort: Name (A-Z)</option>
+              <option value="name-desc">Sort: Name (Z-A)</option>
+              <option value="status-asc">Sort: Status First</option>
             </select>
           </div>
         </div>

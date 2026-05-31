@@ -154,6 +154,19 @@ const styles = {
     background: 'rgba(0,0,0,0.3)', color: 'white', border: '1px solid rgba(255,255,255,0.1)', padding: '10px 16px', borderRadius: '10px', fontSize: '15px', outline: 'none', fontFamily: 'inherit',
     cursor: 'pointer'
   },
+  modernInput: {
+    background: 'rgba(255, 255, 255, 0.04)',
+    color: 'white',
+    border: '1px solid rgba(255, 255, 255, 0.06)',
+    padding: '12px 16px',
+    borderRadius: '12px',
+    fontSize: '14px',
+    outline: 'none',
+    fontFamily: 'inherit',
+    transition: 'all 0.3s ease',
+    width: '100%',
+    boxSizing: 'border-box'
+  },
   statsRow: {
     display: 'flex', gap: '16px'
   },
