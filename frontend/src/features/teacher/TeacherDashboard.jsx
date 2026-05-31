@@ -143,7 +143,7 @@ export default function TeacherDashboard() {
             type="date" 
             value={selectedDate}
             onChange={(e) => setSelectedDate(e.target.value)}
-            style={styles.dateInput}
+            style={{...styles.dateInput, ...(isMobile ? { width: '100%' } : {})}}
             max={role !== 'admin' ? localToday : undefined}
             disabled={role !== 'admin'}
           />

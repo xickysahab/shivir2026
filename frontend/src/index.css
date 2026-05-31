@@ -312,6 +312,7 @@ a:hover {
   border-radius: 14px;
   padding: 16px;
   transition: all 0.2s ease;
+  word-break: break-word;
 }
 .mobile-card:hover {
   background: rgba(255, 255, 255, 0.05);
