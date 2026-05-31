@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import styles from './ActivityLogs.styles';
 import useIsMobile from '../../hooks/useIsMobile';
 
@@ -54,10 +54,10 @@ export default function ActivityLogs() {
 
   // Reset to page 1 when filters change
   useEffect(() => {
-    setCurrentPage(1);
+    setTimeout(() => setCurrentPage(1), 0);
   }, [searchTerm, filterAction, limit]);
 
-  const fetchLogs = async () => {
+  async function fetchLogs() {
     try {
       const query = new URLSearchParams({
         search: searchTerm,
@@ -75,7 +75,7 @@ export default function ActivityLogs() {
       } else {
         setError(data.message);
       }
-    } catch (err) {
+    } catch (err) { console.error(err);
       setError('Failed to fetch activity logs.');
     } finally {
       setLoading(false);
@@ -265,7 +265,7 @@ export default function ActivityLogs() {
               Per page:
               <select 
                 value={limit} 
-                onChange={(e) => { setLimit(Number(e.target.value)); setCurrentPage(1); }}
+                onChange={(e) => { setLimit(Number(e.target.value)); setTimeout(() => setCurrentPage(1), 0); }}
                 style={{...styles.limitSelect, ...(isMobile ? {padding: '3px 6px', fontSize: '12px'} : {})}}
               >
                 <option value={10}>10</option>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell, Legend
@@ -34,7 +34,7 @@ export default function Analytics() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchData = async () => {
+    async function fetchData() {
       try {
         const token = localStorage.getItem('token');
         const [studentsRes, usersRes] = await Promise.all([
@@ -51,7 +51,7 @@ export default function Analytics() {
         
         if (studentsData.success) setStudents(studentsData.data);
         if (usersData.success) setUsers(usersData.data);
-      } catch (err) {
+      } catch (err) { console.error(err);
         console.error(err);
       } finally {
         setLoading(false);

@@ -1,0 +1,345 @@
+
+> frontend@0.0.0 lint
+> eslint .
+
+
+/Users/aagamjain/Desktop/shivir2026/frontend/src/features/admin/ActivityLogs.jsx
+   1:8   error    'React' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         no-unused-vars
+  50:7   error    Error: Cannot access variable before it is declared
+
+`fetchLogs` is accessed before it is declared, which prevents the earlier access from updating when this value changes over time.
+
+  48 |   useEffect(() => {
+  49 |     const delayDebounceFn = setTimeout(() => {
+> 50 |       fetchLogs();
+     |       ^^^^^^^^^ `fetchLogs` accessed before it is declared
+  51 |     }, 300);
+  52 |     return () => clearTimeout(delayDebounceFn);
+  53 |   }, [searchTerm, filterAction]);
+
+  58 |   }, [searchTerm, filterAction, limit]);
+  59 |
+> 60 |   const fetchLogs = async () => {
+     |   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 61 |     try {
+     | ^^^^^^^^^
+> 62 |       const query = new URLSearchParams({
+     …
+     | ^^^^^^^^^
+> 82 |     }
+     | ^^^^^^^^^
+> 83 |   };
+     | ^^^^^ `fetchLogs` is declared here
+  84 |
+  85 |
+  86 |                                                                                                                                                    react-hooks/immutability
+  53:6   warning  React Hook useEffect has a missing dependency: 'fetchLogs'. Either include it or remove the dependency array                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              react-hooks/exhaustive-deps
+  57:5   error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+  55 |   // Reset to page 1 when filters change
+  56 |   useEffect(() => {
+> 57 |     setCurrentPage(1);
+     |     ^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  58 |   }, [searchTerm, filterAction, limit]);
+  59 |
+  60 |   const fetchLogs = async () => {  react-hooks/set-state-in-effect
+  78:14  error    'err' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           no-unused-vars
+
+/Users/aagamjain/Desktop/shivir2026/frontend/src/features/admin/AdminDashboard.jsx
+  1:8  error  'React' is defined but never used  no-unused-vars
+
+/Users/aagamjain/Desktop/shivir2026/frontend/src/features/admin/Analytics.jsx
+  1:8  error  'React' is defined but never used  no-unused-vars
+
+/Users/aagamjain/Desktop/shivir2026/frontend/src/features/admin/CreateUserModal.jsx
+   1:8   error  'React' is defined but never used  no-unused-vars
+  49:14  error  'err' is defined but never used    no-unused-vars
+
+/Users/aagamjain/Desktop/shivir2026/frontend/src/features/admin/MentorsTable.jsx
+    1:8   error    'React' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      no-unused-vars
+   83:5   error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+  81 |   // Reset page to 1 when filters change
+  82 |   useEffect(() => {
+> 83 |     setCurrentPage(1);
+     |     ^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  84 |   }, [searchTerm, filterRole]);
+  85 |
+  86 |   useEffect(() => {                      react-hooks/set-state-in-effect
+   88:7   error    Error: Cannot access variable before it is declared
+
+`fetchUsers` is accessed before it is declared, which prevents the earlier access from updating when this value changes over time.
+
+  86 |   useEffect(() => {
+  87 |     const delayDebounceFn = setTimeout(() => {
+> 88 |       fetchUsers();
+     |       ^^^^^^^^^^ `fetchUsers` accessed before it is declared
+  89 |     }, 300);
+  90 |     return () => clearTimeout(delayDebounceFn);
+  91 |   }, [searchTerm, filterRole, currentPage, limit]);
+
+   91 |   }, [searchTerm, filterRole, currentPage, limit]);
+   92 |
+>  93 |   const fetchUsers = async () => {
+      |   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>  94 |     setLoading(true);
+      | ^^^^^^^^^^^^^^^^^^^^^
+>  95 |     try {
+      …
+      | ^^^^^^^^^^^^^^^^^^^^^
+> 117 |     }
+      | ^^^^^^^^^^^^^^^^^^^^^
+> 118 |   };
+      | ^^^^^ `fetchUsers` is declared here
+  119 |
+  120 |   const handleInputChange = (e) => {
+  121 |     const { name, value } = e.target;  react-hooks/immutability
+   91:6   warning  React Hook useEffect has a missing dependency: 'fetchUsers'. Either include it or remove the dependency array                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          react-hooks/exhaustive-deps
+  113:14  error    'err' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        no-unused-vars
+  156:14  error    'err' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        no-unused-vars
+  174:14  error    'err' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        no-unused-vars
+
+/Users/aagamjain/Desktop/shivir2026/frontend/src/features/auth/Login.jsx
+   1:8   error  'React' is defined but never used  no-unused-vars
+  50:14  error  'err' is defined but never used    no-unused-vars
+
+/Users/aagamjain/Desktop/shivir2026/frontend/src/features/mentor/MentorDashboard.jsx
+   1:8   error    'React' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             no-unused-vars
+  39:7   error    Error: Cannot access variable before it is declared
+
+`fetchAttendance` is accessed before it is declared, which prevents the earlier access from updating when this value changes over time.
+
+  37 |   useEffect(() => {
+  38 |     if (activeTab === 'attendance') {
+> 39 |       fetchAttendance();
+     |       ^^^^^^^^^^^^^^^ `fetchAttendance` accessed before it is declared
+  40 |     }
+  41 |   }, [activeTab, selectedDate, selectedLevel]);
+  42 |
+
+  41 |   }, [activeTab, selectedDate, selectedLevel]);
+  42 |
+> 43 |   const fetchAttendance = async () => {
+     |   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 44 |     setLoadingAttendance(true);
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 45 |     try {
+     …
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 59 |     }
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 60 |   };
+     | ^^^^^ `fetchAttendance` is declared here
+  61 |
+  62 |   const handleStatusChange = (studentId, status) => {
+  63 |     setAttendanceData(prev => prev.map(s => s.id === studentId ? { ...s, status } : s));  react-hooks/immutability
+  41:6   warning  React Hook useEffect has a missing dependency: 'fetchAttendance'. Either include it or remove the dependency array                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            react-hooks/exhaustive-deps
+  55:14  error    'err' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               no-unused-vars
+  66:9   error    'handleMarkAll' is assigned a value but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            no-unused-vars
+  93:13  error    'err' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               no-unused-vars
+
+/Users/aagamjain/Desktop/shivir2026/frontend/src/features/mentor/MentorOverview.jsx
+   1:8   error    'React' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        no-unused-vars
+  21:5   error    Error: Cannot access variable before it is declared
+
+`fetchData` is accessed before it is declared, which prevents the earlier access from updating when this value changes over time.
+
+  19 |
+  20 |   useEffect(() => {
+> 21 |     fetchData();
+     |     ^^^^^^^^^ `fetchData` accessed before it is declared
+  22 |   }, [selectedDate]);
+  23 |
+  24 |   const fetchData = async () => {
+
+  22 |   }, [selectedDate]);
+  23 |
+> 24 |   const fetchData = async () => {
+     |   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 25 |     setLoading(true);
+     | ^^^^^^^^^^^^^^^^^^^^^
+> 26 |     setError('');
+     …
+     | ^^^^^^^^^^^^^^^^^^^^^
+> 46 |     }
+     | ^^^^^^^^^^^^^^^^^^^^^
+> 47 |   };
+     | ^^^^^ `fetchData` is declared here
+  48 |
+  49 |   // Process Attendance Data
+  50 |   const levelStats = {};  react-hooks/immutability
+  22:6   warning  React Hook useEffect has a missing dependency: 'fetchData'. Either include it or remove the dependency array                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             react-hooks/exhaustive-deps
+  42:14  error    'err' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          no-unused-vars
+
+/Users/aagamjain/Desktop/shivir2026/frontend/src/features/shared/AttendanceReport.jsx
+    1:8   error    'React' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            no-unused-vars
+   37:5   error    Error: Cannot access variable before it is declared
+
+`fetchSummary` is accessed before it is declared, which prevents the earlier access from updating when this value changes over time.
+
+  35 |   
+  36 |   useEffect(() => {
+> 37 |     fetchSummary();
+     |     ^^^^^^^^^^^^ `fetchSummary` accessed before it is declared
+  38 |   }, [selectedLevel]);
+  39 |   
+  40 |   useEffect(() => {
+
+  44 |   }, [selectedDay]);
+  45 |
+> 46 |   const fetchSummary = async () => {
+     |   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 47 |     setLoadingSummary(true);
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 48 |     try {
+     …
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 68 |     }
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 69 |   };
+     | ^^^^^ `fetchSummary` is declared here
+  70 |
+  71 |   const fetchDetail = async (dateStr) => {
+  72 |     setLoadingDetail(true);    react-hooks/immutability
+   38:6   warning  React Hook useEffect has a missing dependency: 'fetchSummary'. Either include it or remove the dependency array                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              react-hooks/exhaustive-deps
+   42:7   error    Error: Cannot access variable before it is declared
+
+`fetchDetail` is accessed before it is declared, which prevents the earlier access from updating when this value changes over time.
+
+  40 |   useEffect(() => {
+  41 |     if (selectedDay) {
+> 42 |       fetchDetail(selectedDay);
+     |       ^^^^^^^^^^^ `fetchDetail` accessed before it is declared
+  43 |     }
+  44 |   }, [selectedDay]);
+  45 |
+
+  69 |   };
+  70 |
+> 71 |   const fetchDetail = async (dateStr) => {
+     |   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 72 |     setLoadingDetail(true);
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 73 |     try {
+     …
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 86 |     }
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 87 |   };
+     | ^^^^^ `fetchDetail` is declared here
+  88 |
+  89 |   const saveAttendance = async () => {
+  90 |     setSavingAttendance(true);  react-hooks/immutability
+   44:6   warning  React Hook useEffect has a missing dependency: 'fetchDetail'. Either include it or remove the dependency array                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               react-hooks/exhaustive-deps
+  111:13  error    'err' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              no-unused-vars
+
+/Users/aagamjain/Desktop/shivir2026/frontend/src/features/shared/StudentDetailsModal.jsx
+  1:8  error  'React' is defined but never used  no-unused-vars
+
+/Users/aagamjain/Desktop/shivir2026/frontend/src/features/shared/StudentsTable.jsx
+    1:8   error    'React' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             no-unused-vars
+  108:5   error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+  106 |   // Reset page to 1 when filters change
+  107 |   useEffect(() => {
+> 108 |     setCurrentPage(1);
+      |     ^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  109 |   }, [searchTerm, filterLevel, filterGender]);
+  110 |
+  111 |   useEffect(() => {                                                                                       react-hooks/set-state-in-effect
+  113:7   error    Error: Cannot access variable before it is declared
+
+`fetchStudents` is accessed before it is declared, which prevents the earlier access from updating when this value changes over time.
+
+  111 |   useEffect(() => {
+  112 |     const delayDebounceFn = setTimeout(() => {
+> 113 |       fetchStudents();
+      |       ^^^^^^^^^^^^^ `fetchStudents` accessed before it is declared
+  114 |     }, 300); // 300ms debounce for typing
+  115 |     return () => clearTimeout(delayDebounceFn);
+  116 |   }, [searchTerm, filterLevel, filterGender, currentPage, limit]);
+
+  116 |   }, [searchTerm, filterLevel, filterGender, currentPage, limit]);
+  117 |
+> 118 |   const fetchStudents = async () => {
+      |   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 119 |     setLoading(true);
+      | ^^^^^^^^^^^^^^^^^^^^^
+> 120 |     try {
+      …
+      | ^^^^^^^^^^^^^^^^^^^^^
+> 144 |     }
+      | ^^^^^^^^^^^^^^^^^^^^^
+> 145 |   };
+      | ^^^^^ `fetchStudents` is declared here
+  146 |
+  147 |   const handleInputChange = (e) => {
+  148 |     const { name, value } = e.target;  react-hooks/immutability
+  116:6   warning  React Hook useEffect has a missing dependency: 'fetchStudents'. Either include it or remove the dependency array                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              react-hooks/exhaustive-deps
+  140:14  error    'err' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               no-unused-vars
+  203:14  error    'err' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               no-unused-vars
+  223:14  error    'err' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               no-unused-vars
+  243:14  error    'err' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               no-unused-vars
+  261:14  error    'err' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               no-unused-vars
+  280:14  error    'err' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               no-unused-vars
+  316:14  error    'err' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               no-unused-vars
+
+/Users/aagamjain/Desktop/shivir2026/frontend/src/features/teacher/TeacherDashboard.jsx
+   1:8   error    'React' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               no-unused-vars
+  38:7   error    Error: Cannot access variable before it is declared
+
+`fetchAttendance` is accessed before it is declared, which prevents the earlier access from updating when this value changes over time.
+
+  36 |   useEffect(() => {
+  37 |     if (activeTab === 'attendance') {
+> 38 |       fetchAttendance();
+     |       ^^^^^^^^^^^^^^^ `fetchAttendance` accessed before it is declared
+  39 |     }
+  40 |   }, [activeTab, selectedDate]);
+  41 |
+
+  40 |   }, [activeTab, selectedDate]);
+  41 |
+> 42 |   const fetchAttendance = async () => {
+     |   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 43 |     setLoadingAttendance(true);
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 44 |     try {
+     …
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 58 |     }
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 59 |   };
+     | ^^^^^ `fetchAttendance` is declared here
+  60 |
+  61 |   const handleStatusChange = (studentId, status) => {
+  62 |     setAttendanceData(prev => prev.map(s => s.id === studentId ? { ...s, status } : s));  react-hooks/immutability
+  40:6   warning  React Hook useEffect has a missing dependency: 'fetchAttendance'. Either include it or remove the dependency array                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              react-hooks/exhaustive-deps
+  54:14  error    'err' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 no-unused-vars
+  65:9   error    'handleMarkAll' is assigned a value but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              no-unused-vars
+  92:13  error    'err' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 no-unused-vars
+
+/Users/aagamjain/Desktop/shivir2026/frontend/src/features/teacher/TeacherOverview.jsx
+   1:8  error  'React' is defined but never used           no-unused-vars
+  11:9  error  'level' is assigned a value but never used  no-unused-vars
+
+✖ 54 problems (46 errors, 8 warnings)
+

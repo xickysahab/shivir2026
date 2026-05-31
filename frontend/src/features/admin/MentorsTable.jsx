@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import styles from './MentorsTable.styles';
 import useIsMobile from '../../hooks/useIsMobile';
 
@@ -80,7 +80,7 @@ export default function MentorsTable() {
 
   // Reset page to 1 when filters change
   useEffect(() => {
-    setCurrentPage(1);
+    setTimeout(() => setCurrentPage(1), 0);
   }, [searchTerm, filterRole]);
 
   useEffect(() => {
@@ -90,7 +90,7 @@ export default function MentorsTable() {
     return () => clearTimeout(delayDebounceFn);
   }, [searchTerm, filterRole, currentPage, limit]);
 
-  const fetchUsers = async () => {
+  async function fetchUsers() {
     setLoading(true);
     try {
       const query = new URLSearchParams({
@@ -110,7 +110,7 @@ export default function MentorsTable() {
       } else {
         setError(data.message);
       }
-    } catch (err) {
+    } catch (err) { console.error(err);
       setError('Failed to fetch users.');
     } finally {
       setLoading(false);
@@ -134,7 +134,7 @@ export default function MentorsTable() {
     setShowEditModal(true);
   };
 
-  const handleEditSubmit = async (e) => {
+  async function handleEditSubmit(e) {
     e.preventDefault();
     try {
       const payload = {
@@ -153,12 +153,12 @@ export default function MentorsTable() {
       } else {
         alert(data.message);
       }
-    } catch (err) {
+    } catch (err) { console.error(err);
       alert('Error updating user');
     }
   };
 
-  const handleDelete = async (id) => {
+  async function handleDelete(id) {
     if (!window.confirm('Are you sure you want to delete this user?')) return;
     try {
       const res = await fetch(`/api/users/${id}`, {
@@ -171,7 +171,7 @@ export default function MentorsTable() {
       } else {
         alert(data.message);
       }
-    } catch (err) {
+    } catch (err) { console.error(err);
       alert('Error deleting user');
     }
   };
@@ -315,7 +315,7 @@ export default function MentorsTable() {
             Per page:
             <select 
               value={limit} 
-              onChange={(e) => { setLimit(Number(e.target.value)); setCurrentPage(1); }}
+              onChange={(e) => { setLimit(Number(e.target.value)); setTimeout(() => setCurrentPage(1), 0); }}
               style={{...styles.limitSelect, ...(isMobile ? {padding: '3px 6px', fontSize: '12px'} : {})}}
             >
               <option value={10}>10</option>

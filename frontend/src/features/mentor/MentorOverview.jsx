@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import styles from './MentorOverview.styles';
 
@@ -21,7 +21,7 @@ export default function MentorOverview() {
     fetchData();
   }, [selectedDate]);
 
-  const fetchData = async () => {
+  async function fetchData() {
     setLoading(true);
     setError('');
     try {
@@ -39,7 +39,7 @@ export default function MentorOverview() {
       if (stdResult.success) setStudentsData(stdResult.data);
       else if (!error) setError(stdResult.message || 'Error fetching students');
       
-    } catch (err) {
+    } catch (err) { console.error(err);
       setError('Network error while fetching data.');
     } finally {
       setLoading(false);

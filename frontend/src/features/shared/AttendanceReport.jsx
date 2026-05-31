@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import styles from './AttendanceReport.styles';
 import useIsMobile from '../../hooks/useIsMobile';
 
@@ -43,7 +43,7 @@ export default function AttendanceReport() {
     }
   }, [selectedDay]);
 
-  const fetchSummary = async () => {
+  async function fetchSummary() {
     setLoadingSummary(true);
     try {
       const levelParam = selectedLevel === 'All' ? '' : selectedLevel;
@@ -61,14 +61,14 @@ export default function AttendanceReport() {
         setSummaryData({ ...dataMay.data, ...dataJun.data });
         setTotalStudentsInLevel(dataMay.totalStudents || dataJun.totalStudents || 0);
       }
-    } catch (err) {
+    } catch (err) { console.error(err);
       console.error(err);
     } finally {
       setLoadingSummary(false);
     }
   };
 
-  const fetchDetail = async (dateStr) => {
+  async function fetchDetail(dateStr) {
     setLoadingDetail(true);
     try {
       const levelParam = selectedLevel === 'All' ? '' : selectedLevel;
@@ -79,14 +79,14 @@ export default function AttendanceReport() {
       if (data.success) {
         setDetailData(data.data);
       }
-    } catch (err) {
+    } catch (err) { console.error(err);
       console.error(err);
     } finally {
       setLoadingDetail(false);
     }
   };
 
-  const saveAttendance = async () => {
+  async function saveAttendance() {
     setSavingAttendance(true);
     try {
       const payload = {
@@ -108,7 +108,7 @@ export default function AttendanceReport() {
       } else {
         showToast(data.message || 'Error saving attendance', 'error');
       }
-    } catch(err) {
+    } catch (err) { console.error(err);
       showToast('Network error', 'error');
     } finally {
       setSavingAttendance(false);

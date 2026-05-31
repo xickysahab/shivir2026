@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import styles from './StudentDetailsModal.styles';
 
 export default function StudentDetailsModal({ student, onClose }) {
@@ -20,7 +20,7 @@ export default function StudentDetailsModal({ student, onClose }) {
   useEffect(() => {
     if (!student) return;
     
-    const fetchAttendance = async () => {
+    async function fetchAttendance() {
       try {
         const res = await fetch(`/api/attendance/student/${student.id}`, {
           headers: { 'Authorization': `Bearer ${token}` }
@@ -29,7 +29,7 @@ export default function StudentDetailsModal({ student, onClose }) {
         if (data.success) {
           setAttendanceData(data.data);
         }
-      } catch (err) {
+      } catch (err) { console.error(err);
         console.error(err);
       } finally {
         setLoading(false);

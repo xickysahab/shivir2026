@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import StudentsTable from '../shared/StudentsTable';
 import MentorOverview from './MentorOverview';
@@ -40,7 +40,7 @@ export default function MentorDashboard() {
     }
   }, [activeTab, selectedDate, selectedLevel]);
 
-  const fetchAttendance = async () => {
+  async function fetchAttendance() {
     setLoadingAttendance(true);
     try {
       const res = await fetch(`/api/attendance/?date=${selectedDate}&level=${encodeURIComponent(selectedLevel)}`, {
@@ -52,7 +52,7 @@ export default function MentorDashboard() {
       } else {
         showToast(data.message || 'Error fetching attendance', 'error');
       }
-    } catch (err) {
+    } catch (err) { console.error(err);
       showToast('Network error', 'error');
     } finally {
       setLoadingAttendance(false);
@@ -67,7 +67,7 @@ export default function MentorDashboard() {
     setAttendanceData(prev => prev.map(s => ({ ...s, status })));
   };
 
-  const saveAttendance = async () => {
+  async function saveAttendance() {
     setSavingAttendance(true);
     try {
       const payload = {
@@ -90,7 +90,7 @@ export default function MentorDashboard() {
       } else {
         showToast(data.message || 'Error saving attendance', 'error');
       }
-    } catch(err) {
+    } catch (err) { console.error(err);
       showToast('Network error', 'error');
     } finally {
       setSavingAttendance(false);

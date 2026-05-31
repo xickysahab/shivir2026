@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import styles from './CreateUserModal.styles';
 
 export default function CreateUserModal({ onClose, onSuccess }) {
@@ -12,7 +12,7 @@ export default function CreateUserModal({ onClose, onSuccess }) {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async (e) => {
+  async function handleSubmit(e) {
     e.preventDefault();
     setError('');
     setLoading(true);
@@ -46,7 +46,7 @@ export default function CreateUserModal({ onClose, onSuccess }) {
       } else {
         setError(data.message || 'Failed to create user');
       }
-    } catch (err) {
+    } catch (err) { console.error(err);
       setError('Unable to connect to server. Is the backend running?');
     } finally {
       setLoading(false);

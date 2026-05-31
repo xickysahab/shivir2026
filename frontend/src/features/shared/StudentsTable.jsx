@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import styles from './StudentsTable.styles';
 import StudentDetailsModal from './StudentDetailsModal';
 import useIsMobile from '../../hooks/useIsMobile';
@@ -105,7 +105,7 @@ export default function StudentsTable() {
 
   // Reset page to 1 when filters change
   useEffect(() => {
-    setCurrentPage(1);
+    setTimeout(() => setCurrentPage(1), 0);
   }, [searchTerm, filterLevel, filterGender]);
 
   useEffect(() => {
@@ -115,7 +115,7 @@ export default function StudentsTable() {
     return () => clearTimeout(delayDebounceFn);
   }, [searchTerm, filterLevel, filterGender, currentPage, limit]);
 
-  const fetchStudents = async () => {
+  async function fetchStudents() {
     setLoading(true);
     try {
       const query = new URLSearchParams({
@@ -137,7 +137,7 @@ export default function StudentsTable() {
       } else {
         setError(data.message);
       }
-    } catch (err) {
+    } catch (err) { console.error(err);
       setError('Failed to fetch students.');
     } finally {
       setLoading(false);
@@ -177,7 +177,7 @@ export default function StudentsTable() {
     setShowDetailsModal(true);
   };
 
-  const handleAddSubmit = async (e, force = false) => {
+  async function handleAddSubmit(e, force = false) {
     if (e) e.preventDefault();
     try {
       const payload = { ...formData, force };
@@ -200,12 +200,12 @@ export default function StudentsTable() {
       } else {
         alert(data.message);
       }
-    } catch (err) {
+    } catch (err) { console.error(err);
       alert('Error adding student');
     }
   };
 
-  const handleEditSubmit = async (e) => {
+  async function handleEditSubmit(e) {
     e.preventDefault();
     try {
       const res = await fetch(`/api/students/${currentStudent.id}`, {
@@ -220,12 +220,12 @@ export default function StudentsTable() {
       } else {
         alert(data.message);
       }
-    } catch (err) {
+    } catch (err) { console.error(err);
       alert('Error updating student');
     }
   };
 
-  const handlePointsSubmit = async (e) => {
+  async function handlePointsSubmit(e) {
     e.preventDefault();
     try {
       const res = await fetch(`/api/students/${currentStudent.id}/points`, {
@@ -240,12 +240,12 @@ export default function StudentsTable() {
       } else {
         alert(data.message);
       }
-    } catch (err) {
+    } catch (err) { console.error(err);
       alert('Error updating points');
     }
   };
 
-  const handleDelete = async (id) => {
+  async function handleDelete(id) {
     if (!window.confirm('Are you sure you want to delete this student?')) return;
     try {
       const res = await fetch(`/api/students/${id}`, {
@@ -258,12 +258,12 @@ export default function StudentsTable() {
       } else {
         alert(data.message);
       }
-    } catch (err) {
+    } catch (err) { console.error(err);
       alert('Error deleting student');
     }
   };
 
-  const handleKitToggle = async (student) => {
+  async function handleKitToggle(student) {
     try {
       const newStatus = !student.kit_received;
       const res = await fetch(`/api/students/${student.id}/kit`, {
@@ -277,12 +277,12 @@ export default function StudentsTable() {
       } else {
         alert(data.message);
       }
-    } catch (err) {
+    } catch (err) { console.error(err);
       alert('Error updating kit status');
     }
   };
 
-  const handleFileUpload = async (e, force = false, fileToUpload = null) => {
+  async function handleFileUpload(e, force = false, fileToUpload = null) {
     const file = fileToUpload || e?.target?.files?.[0];
     if (!file) return;
     
@@ -313,7 +313,7 @@ export default function StudentsTable() {
       } else {
         alert(data.message || data.msg || 'Failed to upload CSV. Please make sure you are logged in properly.');
       }
-    } catch (err) {
+    } catch (err) { console.error(err);
       alert('Error uploading file');
     }
     if (e?.target) e.target.value = '';
@@ -333,7 +333,7 @@ export default function StudentsTable() {
     setPendingAddFormData(null);
   };
 
-  const handleExportCSV = async () => {
+  async function handleExportCSV() {
     try {
       const query = new URLSearchParams({
         search: searchTerm,
@@ -385,7 +385,7 @@ export default function StudentsTable() {
       } else {
         alert(data.message || 'Error fetching data for export.');
       }
-    } catch (err) {
+    } catch (err) { console.error(err);
       alert('Error exporting CSV.');
       console.error(err);
     }
@@ -587,7 +587,7 @@ export default function StudentsTable() {
             Rows per page:
             <select 
               value={limit} 
-              onChange={(e) => { setLimit(Number(e.target.value)); setCurrentPage(1); }}
+              onChange={(e) => { setLimit(Number(e.target.value)); setTimeout(() => setCurrentPage(1), 0); }}
               style={styles.limitSelect}
             >
               <option value={10}>10</option>

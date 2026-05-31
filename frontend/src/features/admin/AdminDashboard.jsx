@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import CreateUserModal from './CreateUserModal';
 import StudentsTable from '../shared/StudentsTable';
@@ -15,6 +15,20 @@ export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState('analytics');
   const [showModal, setShowModal] = useState(false);
   const [toast, setToast] = useState({ message: '', type: '' });
+
+  // Mobile Nav Scroll State
+  const [isNavVisible, setIsNavVisible] = useState(true);
+  const [lastScrollY, setLastScrollY] = useState(0);
+
+  const handleScroll = (e) => {
+    const currentScrollY = e.target.scrollTop;
+    if (currentScrollY > lastScrollY && currentScrollY > 50) {
+      setIsNavVisible(false);
+    } else if (currentScrollY < lastScrollY) {
+      setIsNavVisible(true);
+    }
+    setLastScrollY(currentScrollY);
+  };
 
   useEffect(() => {
     const handleOpenCreateModal = () => setShowModal(true);
@@ -88,7 +102,7 @@ export default function AdminDashboard() {
           </div>
 
           {/* Mobile Content */}
-          <div style={styles.mobileContentArea} className="mobile-scroll">
+          <div style={styles.mobileContentArea} className="mobile-scroll" onScroll={handleScroll}>
             <header style={styles.mobileMainHeader}>
               <h1 style={styles.mobilePageTitle}>{pageTitles[activeTab]}</h1>
             </header>
@@ -98,7 +112,11 @@ export default function AdminDashboard() {
           </div>
 
           {/* Bottom Nav */}
-          <nav style={styles.bottomNav}>
+          <nav style={{
+            ...styles.bottomNav,
+            transform: isNavVisible ? 'translateY(0)' : 'translateY(150%)',
+            transition: 'transform 0.4s cubic-bezier(0.4, 0, 0.2, 1)'
+          }}>
             {navTabs.map(tab => (
               <button
                 key={tab.key}

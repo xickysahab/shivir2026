@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import StudentsTable from '../shared/StudentsTable';
 import TeacherOverview from './TeacherOverview';
@@ -15,6 +15,20 @@ export default function TeacherDashboard() {
   
   const [activeTab, setActiveTab] = useState('overview');
   const [toast, setToast] = useState({ message: '', type: '' });
+
+  // Mobile Nav Scroll State
+  const [isNavVisible, setIsNavVisible] = useState(true);
+  const [lastScrollY, setLastScrollY] = useState(0);
+
+  const handleScroll = (e) => {
+    const currentScrollY = e.target.scrollTop;
+    if (currentScrollY > lastScrollY && currentScrollY > 50) {
+      setIsNavVisible(false);
+    } else if (currentScrollY < lastScrollY) {
+      setIsNavVisible(true);
+    }
+    setLastScrollY(currentScrollY);
+  };
 
   // Attendance State
   const [attendanceData, setAttendanceData] = useState([]);
@@ -39,7 +53,7 @@ export default function TeacherDashboard() {
     }
   }, [activeTab, selectedDate]);
 
-  const fetchAttendance = async () => {
+  async function fetchAttendance() {
     setLoadingAttendance(true);
     try {
       const res = await fetch(`/api/attendance/?date=${selectedDate}`, {
@@ -51,7 +65,7 @@ export default function TeacherDashboard() {
       } else {
         showToast(data.message || 'Error fetching attendance', 'error');
       }
-    } catch (err) {
+    } catch (err) { console.error(err);
       showToast('Network error', 'error');
     } finally {
       setLoadingAttendance(false);
@@ -66,7 +80,7 @@ export default function TeacherDashboard() {
     setAttendanceData(prev => prev.map(s => ({ ...s, status })));
   };
 
-  const saveAttendance = async () => {
+  async function saveAttendance() {
     setSavingAttendance(true);
     try {
       const payload = {
@@ -89,7 +103,7 @@ export default function TeacherDashboard() {
       } else {
         showToast(data.message || 'Error saving attendance', 'error');
       }
-    } catch(err) {
+    } catch (err) { console.error(err);
       showToast('Network error', 'error');
     } finally {
       setSavingAttendance(false);
@@ -260,7 +274,7 @@ export default function TeacherDashboard() {
             <button onClick={handleLogout} style={styles.mobileLogoutBtn}>Logout</button>
           </div>
 
-          <div style={styles.mobileContentArea} className="mobile-scroll">
+          <div style={styles.mobileContentArea} className="mobile-scroll" onScroll={handleScroll}>
             <header style={styles.mobileMainHeader}>
               <h1 style={styles.mobilePageTitle}>{pageTitles[activeTab]}</h1>
             </header>
@@ -269,7 +283,11 @@ export default function TeacherDashboard() {
             </div>
           </div>
 
-          <nav style={styles.bottomNav}>
+          <nav style={{
+            ...styles.bottomNav,
+            transform: isNavVisible ? 'translateY(0)' : 'translateY(150%)',
+            transition: 'transform 0.4s cubic-bezier(0.4, 0, 0.2, 1)'
+          }}>
             {navTabs.map(tab => (
               <button key={tab.key} className={`bottom-nav-item${activeTab === tab.key ? ' active' : ''}`} style={activeTab === tab.key ? styles.bottomNavItemActive : styles.bottomNavItem} onClick={() => setActiveTab(tab.key)}>
                 <span style={{ fontSize: '18px' }}>{tab.icon}</span>

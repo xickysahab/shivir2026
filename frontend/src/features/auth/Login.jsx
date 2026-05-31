@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styles from './Login.styles';
 
@@ -10,7 +10,7 @@ export default function Login() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async (e) => {
+  async function handleSubmit(e) {
     e.preventDefault();
     setError('');
     setLoading(true);
@@ -47,7 +47,7 @@ export default function Login() {
           setError(data.message || 'Invalid Login ID or Password');
         }
       }
-    } catch (err) {
+    } catch (err) { console.error(err);
       setError('Unable to connect to server. Is the backend running?');
     } finally {
       setLoading(false);

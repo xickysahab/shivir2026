@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts';
 import styles from './TeacherOverview.styles';
 
@@ -16,7 +16,7 @@ export default function TeacherOverview() {
   }, []);
 
   useEffect(() => {
-    const fetchStudents = async () => {
+    async function fetchStudents() {
       try {
         const res = await fetch('/api/students/?all=true', {
           headers: { 'Authorization': `Bearer ${token}` }
@@ -25,7 +25,7 @@ export default function TeacherOverview() {
         if (data.success) {
           setStudents(data.data);
         }
-      } catch (err) {
+      } catch (err) { console.error(err);
         console.error(err);
       } finally {
         setLoading(false);
