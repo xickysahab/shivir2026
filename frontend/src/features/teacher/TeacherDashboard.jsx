@@ -183,8 +183,11 @@ export default function TeacherDashboard() {
               <div style={{...styles.studentInfo, ...(isMobile ? {gap: '10px'} : {})}}>
                 <div style={{...styles.studentAvatar, ...(isMobile ? {width: '32px', height: '32px', fontSize: '13px'} : {})}}>{student.name.charAt(0).toUpperCase()}</div>
                 <div>
-                  <div style={{...styles.studentName, ...(isMobile ? {fontSize: '13px', marginBottom: '2px', wordBreak: 'break-word', whiteSpace: 'normal'} : {})}}>{student.name}</div>
-                  <div style={{...styles.studentMeta, ...(isMobile ? {fontSize: '11px'} : {})}}>Roll: {student.roll_no} | {student.gender} | Age: {student.age}</div>
+                  <div style={{...styles.studentName, ...(isMobile ? {fontSize: '13px', marginBottom: '2px', wordBreak: 'break-word', whiteSpace: 'normal'} : {})}}>{student.name} <span style={{fontSize: '11px', color: 'rgba(255,255,255,0.5)', fontWeight: 'normal'}}> (S/o {student.father_name})</span></div>
+                  <div style={{...styles.studentMeta, ...(isMobile ? {fontSize: '11px'} : {})}}>
+                    Roll: {student.roll_no} | {student.gender} | Age: {student.age}
+                    {student.kit_received ? ' | 🎒 Kit Given' : ' | ❌ No Kit'}
+                  </div>
                 </div>
               </div>
               <div style={{...styles.toggleGroup, ...(isMobile ? {gap: '4px', padding: '3px', borderRadius: '10px'} : {})}}>

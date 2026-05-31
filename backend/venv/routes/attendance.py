@@ -60,6 +60,7 @@ def get_attendance():
         'gender': s.gender,
         'age': s.age,
         'level': s.level,
+        'kit_received': s.kit_received,
         'status': attendance_map.get(s.id, None)
     } for s in students]
 
