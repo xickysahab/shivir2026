@@ -24,8 +24,21 @@ def get_attendance():
         return jsonify({'success': False, 'message': 'Invalid date format. Use YYYY-MM-DD'}), 400
 
     level = request.args.get('level', '')
+    search = request.args.get('search', '')
+    sort_by = request.args.get('sort_by', 'roll_no')
+    sort_order = request.args.get('sort_order', 'asc')
     
     query = Student.query
+    if search:
+        from sqlalchemy import or_
+        search_pattern = f"%{search}%"
+        query = query.filter(or_(
+            Student.name.ilike(search_pattern),
+            Student.roll_no.ilike(search_pattern),
+            Student.mobile.ilike(search_pattern),
+            Student.father_name.ilike(search_pattern)
+        ))
+
     if user_role == 'teacher' and assigned_level:
         assigned_levels = [l.strip() for l in assigned_level.split(',')]
         query = query.filter(Student.level.in_(assigned_levels))
@@ -63,6 +76,20 @@ def get_attendance():
         'kit_received': s.kit_received,
         'status': attendance_map.get(s.id, None)
     } for s in students]
+
+    # Sort the list based on parameters
+    if sort_by == 'name':
+        student_list.sort(key=lambda x: str(x['name']).lower())
+    elif sort_by == 'status':
+        # Sort by Present, Absent, Unmarked
+        status_rank = {'Present': 1, 'Absent': 2, None: 3}
+        student_list.sort(key=lambda x: (status_rank[x['status']], natural_sort_key(x['roll_no'])))
+    else:
+        # Default is roll_no which is already sorted
+        pass
+
+    if sort_order == 'desc':
+        student_list.reverse()
 
     return jsonify({
         'success': True,

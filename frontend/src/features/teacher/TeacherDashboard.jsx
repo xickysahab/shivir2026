@@ -41,6 +41,11 @@ export default function TeacherDashboard() {
   const localToday = new Date(today.getTime() - (offset*60*1000)).toISOString().split('T')[0];
   const [selectedDate, setSelectedDate] = useState(localToday);
 
+  // Search & Sort State
+  const [searchQuery, setSearchQuery] = useState('');
+  const [sortBy, setSortBy] = useState('roll_no');
+  const [sortOrder, setSortOrder] = useState('asc');
+
   // Stats
   const totalStudents = attendanceData.length;
   const presentCount = attendanceData.filter(s => s.status === 'Present').length;
@@ -49,14 +54,17 @@ export default function TeacherDashboard() {
 
   useEffect(() => {
     if (activeTab === 'attendance') {
-      fetchAttendance();
+      const delayDebounceFn = setTimeout(() => {
+        fetchAttendance();
+      }, 300);
+      return () => clearTimeout(delayDebounceFn);
     }
-  }, [activeTab, selectedDate]);
+  }, [activeTab, selectedDate, searchQuery, sortBy, sortOrder]);
 
   async function fetchAttendance() {
     setLoadingAttendance(true);
     try {
-      const res = await fetch(`/api/attendance/?date=${selectedDate}`, {
+      const res = await fetch(`/api/attendance/?date=${selectedDate}&search=${encodeURIComponent(searchQuery)}&sort_by=${sortBy}&sort_order=${sortOrder}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const data = await res.json();
@@ -160,19 +168,49 @@ export default function TeacherDashboard() {
   const renderAttendanceContent = () => (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
       <div style={isMobile ? styles.mobileControlPanel : styles.controlPanel}>
-        <div style={styles.datePickerWrapper}>
-          <label style={styles.controlLabel}>Select Date</label>
-          <input 
-            type="date" 
-            value={selectedDate}
-            onChange={(e) => setSelectedDate(e.target.value)}
-            style={{...styles.dateInput, ...(isMobile ? { width: '100%' } : {})}}
-            max={role !== 'admin' ? localToday : undefined}
-            disabled={role !== 'admin'}
-          />
-          {role !== 'admin' && (
-            <span style={{fontSize: '12px', color: 'rgba(255,255,255,0.4)', marginTop: '4px'}}>Locked to today</span>
-          )}
+        <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', width: '100%' }}>
+          <div style={{...styles.datePickerWrapper, flex: 1, minWidth: '150px'}}>
+            <label style={styles.controlLabel}>Select Date</label>
+            <input 
+              type="date" 
+              value={selectedDate}
+              onChange={(e) => setSelectedDate(e.target.value)}
+              style={{...styles.dateInput, width: '100%'}}
+              max={role !== 'admin' ? localToday : undefined}
+              disabled={role !== 'admin'}
+            />
+            {role !== 'admin' && (
+              <span style={{fontSize: '12px', color: 'rgba(255,255,255,0.4)', marginTop: '4px'}}>Locked to today</span>
+            )}
+          </div>
+          <div style={{...styles.datePickerWrapper, flex: 2, minWidth: '180px'}}>
+            <label style={styles.controlLabel}>Search Student</label>
+            <input 
+              type="text" 
+              placeholder="Search name, roll no..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              style={{...styles.dateInput, width: '100%'}}
+            />
+          </div>
+          <div style={{...styles.datePickerWrapper, flex: 1, minWidth: '130px'}}>
+            <label style={styles.controlLabel}>Sort By</label>
+            <select 
+              value={`${sortBy}-${sortOrder}`} 
+              onChange={(e) => {
+                const [newSortBy, newSortOrder] = e.target.value.split('-');
+                setSortBy(newSortBy);
+                setSortOrder(newSortOrder);
+              }}
+              style={{...styles.dateInput, width: '100%'}}
+            >
+              <option value="roll_no-asc">Roll No (Asc)</option>
+              <option value="roll_no-desc">Roll No (Desc)</option>
+              <option value="name-asc">Name (A-Z)</option>
+              <option value="name-desc">Name (Z-A)</option>
+              <option value="status-asc">Status</option>
+            </select>
+          </div>
         </div>
 
         <div style={isMobile ? styles.mobileStatsRow : styles.statsRow}>
