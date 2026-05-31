@@ -20,7 +20,7 @@ export default function MentorDashboard() {
   const [attendanceData, setAttendanceData] = useState([]);
   const [loadingAttendance, setLoadingAttendance] = useState(false);
   const [savingAttendance, setSavingAttendance] = useState(false);
-  const [selectedLevel, setSelectedLevel] = useState('Level 1');
+  const [selectedLevel, setSelectedLevel] = useState('All');
   
   // Date logic
   const today = new Date();
@@ -167,6 +167,7 @@ export default function MentorDashboard() {
           </div>
           <div style={{ flex: '1 1 120px' }}>
             <select value={selectedLevel} onChange={(e) => setSelectedLevel(e.target.value)} style={styles.modernInput}>
+              <option value="All">All Levels</option>
               <option value="Level 1">Level 1</option>
               <option value="Level 2">Level 2</option>
               <option value="Level 3">Level 3</option>

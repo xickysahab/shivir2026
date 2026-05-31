@@ -157,13 +157,13 @@ const styles = {
   modernInput: {
     background: 'rgba(255, 255, 255, 0.04)',
     color: 'white',
-    border: '1px solid rgba(255, 255, 255, 0.06)',
-    padding: '12px 16px',
-    borderRadius: '12px',
-    fontSize: '14px',
+    border: '1px solid rgba(255, 255, 255, 0.08)',
+    padding: '8px 14px',
+    borderRadius: '10px',
+    fontSize: '13px',
     outline: 'none',
     fontFamily: 'inherit',
-    transition: 'all 0.3s ease',
+    transition: 'all 0.2s ease',
     width: '100%',
     boxSizing: 'border-box'
   },
