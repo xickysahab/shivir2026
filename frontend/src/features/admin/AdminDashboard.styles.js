@@ -133,6 +133,45 @@ const styles = {
     animation: 'slideUp 0.5s ease',
   },
 
+  controlPanel: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    background: 'rgba(255, 255, 255, 0.02)',
+    border: '1px solid rgba(255, 255, 255, 0.05)',
+    padding: '20px',
+    borderRadius: '16px',
+    gap: '20px'
+  },
+  datePickerWrapper: { display: 'flex', flexDirection: 'column', gap: '8px' },
+  controlLabel: { color: 'rgba(255,255,255,0.6)', fontSize: '13px', fontWeight: 600 },
+  dateInput: {
+    background: 'rgba(0,0,0,0.3)', color: 'white', border: '1px solid rgba(255,255,255,0.1)', padding: '10px 16px', borderRadius: '10px', fontSize: '15px', outline: 'none', fontFamily: 'inherit',
+    cursor: 'pointer'
+  },
+  modernInput: {
+    background: 'rgba(255, 255, 255, 0.04)', color: 'white', border: '1px solid rgba(255, 255, 255, 0.08)', padding: '8px 14px', borderRadius: '10px', fontSize: '13px', outline: 'none', fontFamily: 'inherit', transition: 'all 0.2s ease', width: '100%', boxSizing: 'border-box'
+  },
+  statsRow: { display: 'flex', gap: '16px' },
+  statCard: { background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.05)', padding: '12px 24px', borderRadius: '12px', display: 'flex', flexDirection: 'column', alignItems: 'center', minWidth: '100px' },
+  statValue: { color: 'white', fontSize: '24px', fontWeight: 800, marginBottom: '4px' },
+  statLabel: { color: 'rgba(255,255,255,0.5)', fontSize: '12px', fontWeight: 600, textTransform: 'uppercase' },
+  studentGrid: { display: 'flex', flexDirection: 'column', gap: '12px', paddingBottom: '100px' },
+  studentRow: { background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', padding: '16px 20px', borderRadius: '14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', transition: 'transform 0.2s' },
+  studentInfo: { display: 'flex', alignItems: 'center', gap: '16px' },
+  studentAvatar: { width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(255,255,255,0.05)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' },
+  studentName: { color: 'white', fontSize: '15px', fontWeight: 600, marginBottom: '4px' },
+  studentMeta: { color: 'rgba(255,255,255,0.4)', fontSize: '13px' },
+  toggleGroup: { display: 'flex', gap: '8px', background: 'rgba(0,0,0,0.2)', padding: '4px', borderRadius: '12px' },
+  toggleBtnPresent: { padding: '8px 16px', borderRadius: '8px', border: 'none', background: 'transparent', color: 'rgba(255,255,255,0.4)', fontWeight: 600, cursor: 'pointer', transition: 'all 0.2s' },
+  toggleBtnPresentActive: { padding: '8px 16px', borderRadius: '8px', border: '1px solid rgba(16, 185, 129, 0.5)', background: 'rgba(16, 185, 129, 0.15)', color: '#10b981', fontWeight: 600, cursor: 'pointer', boxShadow: '0 0 15px rgba(16, 185, 129, 0.1)', transition: 'all 0.2s' },
+  toggleBtnAbsent: { padding: '8px 16px', borderRadius: '8px', border: 'none', background: 'transparent', color: 'rgba(255,255,255,0.4)', fontWeight: 600, cursor: 'pointer', transition: 'all 0.2s' },
+  toggleBtnAbsentActive: { padding: '8px 16px', borderRadius: '8px', border: '1px solid rgba(244, 63, 94, 0.5)', background: 'rgba(244, 63, 94, 0.15)', color: '#f43f5e', fontWeight: 600, cursor: 'pointer', boxShadow: '0 0 15px rgba(244, 63, 94, 0.1)', transition: 'all 0.2s' },
+  toggleBtnClear: { padding: '8px 12px', borderRadius: '8px', border: 'none', background: 'transparent', color: 'rgba(255,255,255,0.3)', cursor: 'pointer', transition: 'all 0.2s', display: 'flex', alignItems: 'center', justifyContent: 'center' },
+  toggleBtnClearActive: { padding: '8px 12px', borderRadius: '8px', border: '1px solid rgba(255, 255, 255, 0.2)', background: 'rgba(255,255,255,0.05)', color: 'white', cursor: 'pointer', transition: 'all 0.2s', display: 'flex', alignItems: 'center', justifyContent: 'center' },
+  floatingSaveBar: { position: 'fixed', bottom: '20px', right: '16px', zIndex: 100 },
+  saveBtn: { background: 'linear-gradient(135deg, #6366f1, #8b5cf6)', color: 'white', border: 'none', padding: '14px 24px', borderRadius: '100px', fontSize: '15px', fontWeight: 800, cursor: 'pointer', boxShadow: '0 10px 25px rgba(99, 102, 241, 0.4)', display: 'flex', alignItems: 'center', gap: '10px', transition: 'transform 0.2s', whiteSpace: 'nowrap' },
+
   toastSuccess: {
     position: 'fixed', bottom: '24px', right: '24px', zIndex: 200,
     display: 'flex', alignItems: 'center', gap: '8px', padding: '14px 24px',
@@ -162,8 +201,25 @@ const styles = {
     top: 0,
     zIndex: 50,
   },
+  mobileControlPanel: {
+    display: 'flex', flexDirection: 'column', gap: '16px',
+    background: 'linear-gradient(145deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.01) 100%)',
+    border: '1px solid rgba(255, 255, 255, 0.08)',
+    padding: '16px', borderRadius: '20px',
+    boxShadow: '0 10px 30px rgba(0,0,0,0.2)',
+    backdropFilter: 'blur(12px)',
+  },
   mobileStatsRow: {
     display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '10px'
+  },
+  mobileStudentRow: {
+    background: 'linear-gradient(145deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.01) 100%)', 
+    border: '1px solid rgba(255,255,255,0.08)',
+    padding: '16px 16px', borderRadius: '16px', 
+    display: 'flex', flexDirection: 'column', gap: '12px',
+    boxShadow: '0 8px 24px rgba(0,0,0,0.15)',
+    backdropFilter: 'blur(12px)',
+    transition: 'transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.2s',
   },
   mobileTopBarLeft: {
     display: 'flex', alignItems: 'center', gap: '10px'

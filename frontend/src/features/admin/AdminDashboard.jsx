@@ -15,10 +15,35 @@ export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState('analytics');
   const [showModal, setShowModal] = useState(false);
   const [toast, setToast] = useState({ message: '', type: '' });
+  const token = localStorage.getItem('token');
+  const role = localStorage.getItem('userRole') || 'admin';
 
   // Mobile Nav Scroll State
   const [isNavVisible, setIsNavVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
+
+  // Attendance State
+  const [attendanceData, setAttendanceData] = useState([]);
+  const [loadingAttendance, setLoadingAttendance] = useState(false);
+  const [savingAttendance, setSavingAttendance] = useState(false);
+  const [selectedLevel, setSelectedLevel] = useState('All');
+  
+  // Date logic
+  const today = new Date();
+  const offset = today.getTimezoneOffset();
+  const localToday = new Date(today.getTime() - (offset*60*1000)).toISOString().split('T')[0];
+  const [selectedDate, setSelectedDate] = useState(localToday);
+
+  // Search & Sort State
+  const [searchQuery, setSearchQuery] = useState('');
+  const [sortBy, setSortBy] = useState('roll_no');
+  const [sortOrder, setSortOrder] = useState('asc');
+
+  // Stats
+  const totalStudents = attendanceData.length;
+  const presentCount = attendanceData.filter(s => s.status === 'Present').length;
+  const absentCount = attendanceData.filter(s => s.status === 'Absent').length;
+  const attendanceRate = totalStudents > 0 ? Math.round((presentCount / totalStudents) * 100) : 0;
 
   const handleScroll = (e) => {
     const currentScrollY = e.target.scrollTop;
@@ -36,6 +61,91 @@ export default function AdminDashboard() {
     return () => document.removeEventListener('openCreateUserModal', handleOpenCreateModal);
   }, []);
 
+  useEffect(() => {
+    if (activeTab === 'attendance') {
+      const delayDebounceFn = setTimeout(() => {
+        fetchAttendance();
+      }, 300);
+      return () => clearTimeout(delayDebounceFn);
+    }
+  }, [activeTab, selectedDate, selectedLevel, searchQuery, sortBy, sortOrder]);
+
+  async function fetchAttendance() {
+    setLoadingAttendance(true);
+    try {
+      const res = await fetch(`/api/attendance/?date=${selectedDate}&level=${encodeURIComponent(selectedLevel)}&search=${encodeURIComponent(searchQuery)}&sort_by=${sortBy}&sort_order=${sortOrder}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const data = await res.json();
+      if (data.success) {
+        setAttendanceData(data.data);
+      } else {
+        showToast(data.message || 'Error fetching attendance', 'error');
+      }
+    } catch (err) { console.error(err);
+      showToast('Network error', 'error');
+    } finally {
+      setLoadingAttendance(false);
+    }
+  };
+
+  const handleStatusChange = (studentId, status) => {
+    setAttendanceData(prev => prev.map(s => s.id === studentId ? { ...s, status } : s));
+  };
+
+  const handleToggleKit = async (studentId, currentStatus) => {
+    try {
+      const res = await fetch(`/api/students/${studentId}/kit`, {
+        method: 'PATCH',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ kit_received: !currentStatus })
+      });
+      const data = await res.json();
+      if (data.success) {
+        setAttendanceData(prev => prev.map(s => s.id === studentId ? { ...s, kit_received: !currentStatus } : s));
+        showToast(data.message || 'Kit status updated!', 'success');
+      } else {
+        showToast(data.message || 'Failed to update kit', 'error');
+      }
+    } catch (err) {
+      console.error(err);
+      showToast('Network error', 'error');
+    }
+  };
+
+  async function saveAttendance() {
+    setSavingAttendance(true);
+    try {
+      const payload = {
+        date: selectedDate,
+        attendance: attendanceData.map(s => ({ student_id: s.id, status: s.status }))
+      };
+      
+      const res = await fetch('/api/attendance/', {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      if (data.success) {
+        showToast(data.message || 'Attendance Saved Successfully! 🎉', 'success');
+        fetchAttendance();
+      } else {
+        showToast(data.message || 'Error saving attendance', 'error');
+      }
+    } catch (err) { console.error(err);
+      showToast('Network error', 'error');
+    } finally {
+      setSavingAttendance(false);
+    }
+  };
+
   const handleUserCreated = (message) => {
     setShowModal(false);
     setToast({ message, type: 'success' });
@@ -51,6 +161,7 @@ export default function AdminDashboard() {
     { key: 'analytics', icon: '📊', label: 'Analytics' },
     { key: 'students', icon: '🎓', label: 'Students' },
     { key: 'mentors', icon: '👨‍🏫', label: 'Mentors' },
+    { key: 'attendance', icon: '📅', label: 'Attendance' },
     { key: 'logs', icon: '🕒', label: 'Logs' },
     { key: 'report', icon: '📜', label: 'Report' }
   ];
@@ -59,15 +170,145 @@ export default function AdminDashboard() {
     analytics: 'Dashboard Overview',
     students: 'Students Directory',
     mentors: 'Teachers & Mentors',
+    attendance: 'Mark Attendance',
     logs: 'System Activity Logs',
     report: 'Attendance Report & History'
   };
+
+  const renderAttendanceContent = () => (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+      <div style={isMobile ? styles.mobileControlPanel : styles.controlPanel}>
+        <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', width: '100%', alignItems: 'flex-start' }}>
+          <div style={{ flex: '1 1 200px' }}>
+            <input 
+              type="text" 
+              placeholder="🔍 Search students by name or roll..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              style={styles.modernInput}
+            />
+          </div>
+          <div style={{ flex: '1 1 120px' }}>
+            <select value={selectedLevel} onChange={(e) => setSelectedLevel(e.target.value)} style={styles.modernInput}>
+              <option value="All">All Levels</option>
+              <option value="Level 1">Level 1</option>
+              <option value="Level 2">Level 2</option>
+              <option value="Level 3">Level 3</option>
+              <option value="Level 4">Level 4</option>
+              <option value="Level 5">Level 5</option>
+              <option value="प्रौढ़ कक्षा">प्रौढ़ कक्षा</option>
+            </select>
+          </div>
+          <div style={{ flex: '1 1 120px' }}>
+            <input type="date" value={selectedDate} onChange={(e) => setSelectedDate(e.target.value)} style={styles.modernInput} max={role !== 'admin' ? localToday : undefined} disabled={role !== 'admin'} />
+            {role !== 'admin' && <div style={{fontSize: '10px', color: 'rgba(255,255,255,0.4)', marginTop: '6px', textAlign: 'center'}}>Locked to today</div>}
+          </div>
+          <div style={{ flex: '1 1 140px' }}>
+            <select 
+              value={`${sortBy}-${sortOrder}`} 
+              onChange={(e) => {
+                const [newSortBy, newSortOrder] = e.target.value.split('-');
+                setSortBy(newSortBy);
+                setSortOrder(newSortOrder);
+              }}
+              style={styles.modernInput}
+            >
+              <option value="roll_no-asc">Sort: Roll No (Asc)</option>
+              <option value="roll_no-desc">Sort: Roll No (Desc)</option>
+              <option value="name-asc">Sort: Name (A-Z)</option>
+              <option value="name-desc">Sort: Name (Z-A)</option>
+              <option value="status-asc">Sort: Status First</option>
+            </select>
+          </div>
+        </div>
+
+        <div style={isMobile ? styles.mobileStatsRow : styles.statsRow}>
+          <div style={{...styles.statCard, ...(isMobile ? {padding: '8px 4px', minWidth: 0, borderRadius: '8px'} : {})}}><div style={{...styles.statValue, ...(isMobile ? {fontSize: '16px'} : {})}}>{totalStudents}</div><div style={{...styles.statLabel, ...(isMobile ? {fontSize: '10px', letterSpacing: 0} : {})}}>Total</div></div>
+          <div style={{...styles.statCard, borderColor: 'rgba(16, 185, 129, 0.2)', ...(isMobile ? {padding: '8px 4px', minWidth: 0, borderRadius: '8px'} : {})}}><div style={{...styles.statValue, color: '#10b981', ...(isMobile ? {fontSize: '16px'} : {})}}>{presentCount}</div><div style={{...styles.statLabel, ...(isMobile ? {fontSize: '10px', letterSpacing: 0} : {})}}>Present</div></div>
+          <div style={{...styles.statCard, borderColor: 'rgba(244, 63, 94, 0.2)', ...(isMobile ? {padding: '8px 4px', minWidth: 0, borderRadius: '8px'} : {})}}><div style={{...styles.statValue, color: '#f43f5e', ...(isMobile ? {fontSize: '16px'} : {})}}>{absentCount}</div><div style={{...styles.statLabel, ...(isMobile ? {fontSize: '10px', letterSpacing: 0} : {})}}>Absent</div></div>
+          <div style={{...styles.statCard, ...(isMobile ? {padding: '8px 4px', minWidth: 0, borderRadius: '8px'} : {})}}><div style={{...styles.statValue, ...(isMobile ? {fontSize: '16px'} : {})}}>{attendanceRate}%</div><div style={{...styles.statLabel, ...(isMobile ? {fontSize: '10px', letterSpacing: 0} : {})}}>Rate</div></div>
+        </div>
+      </div>
+
+      <div style={styles.studentGrid}>
+        {loadingAttendance ? (
+          <div style={{color: 'white', padding: '20px'}}>Loading...</div>
+        ) : attendanceData.length === 0 ? (
+          <div style={{color: 'white', padding: '20px'}}>No students found for this level.</div>
+        ) : (
+          attendanceData.map(student => (
+            <div key={student.id} style={isMobile ? styles.mobileStudentRow : styles.studentRow}>
+              <div style={{...styles.studentInfo, ...(isMobile ? {gap: '10px'} : {})}}>
+                <div style={{...styles.studentAvatar, ...(isMobile ? {width: '32px', height: '32px', fontSize: '13px'} : {})}}>{student.name.charAt(0).toUpperCase()}</div>
+                <div>
+                  <div style={{...styles.studentName, ...(isMobile ? {fontSize: '13px', marginBottom: '2px'} : {})}}>{student.name} <span style={{fontSize: '11px', color: 'rgba(255,255,255,0.5)', fontWeight: 'normal'}}> (S/o {student.father_name})</span></div>
+                  <div style={{...styles.studentMeta, ...(isMobile ? {fontSize: '11px'} : {}), display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '4px'}}>
+                    Roll: {student.roll_no} | {student.gender} | Age: {student.age} |
+                    <button 
+                      onClick={(e) => { e.stopPropagation(); handleToggleKit(student.id, student.kit_received); }}
+                      style={{
+                        background: student.kit_received ? 'rgba(16, 185, 129, 0.2)' : 'rgba(244, 63, 94, 0.2)',
+                        color: student.kit_received ? '#10b981' : '#f43f5e',
+                        border: `1px solid ${student.kit_received ? 'rgba(16, 185, 129, 0.3)' : 'rgba(244, 63, 94, 0.3)'}`,
+                        padding: '2px 8px',
+                        borderRadius: '12px',
+                        fontSize: '10px',
+                        fontWeight: 'bold',
+                        cursor: 'pointer',
+                        marginLeft: '4px',
+                        transition: 'all 0.2s ease'
+                      }}
+                    >
+                      {student.kit_received ? '🎒 Kit Given' : '❌ No Kit'}
+                    </button>
+                  </div>
+                </div>
+              </div>
+              <div style={{...styles.toggleGroup, ...(isMobile ? {gap: '4px', padding: '3px', borderRadius: '10px'} : {})}}>
+                <button style={{...(student.status === 'Present' ? styles.toggleBtnPresentActive : styles.toggleBtnPresent), ...(isMobile ? {padding: '6px 10px', fontSize: '12px', borderRadius: '7px'} : {})}} onClick={() => handleStatusChange(student.id, 'Present')}>{isMobile ? 'P' : 'Present'}</button>
+                <button style={{...(student.status === 'Absent' ? styles.toggleBtnAbsentActive : styles.toggleBtnAbsent), ...(isMobile ? {padding: '6px 10px', fontSize: '12px', borderRadius: '7px'} : {})}} onClick={() => handleStatusChange(student.id, 'Absent')}>{isMobile ? 'A' : 'Absent'}</button>
+                <button style={{...(student.status === null ? styles.toggleBtnClearActive : styles.toggleBtnClear), ...(isMobile ? {padding: '6px 8px', borderRadius: '7px'} : {})}} onClick={() => handleStatusChange(student.id, null)} title="Clear"><span style={{ fontSize: isMobile ? '12px' : '14px' }}>↺</span></button>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+
+      <div style={{ 
+        ...styles.floatingSaveBar, 
+        ...(isMobile ? { 
+          bottom: '72px',
+          right: '16px',
+          left: 'auto',
+          background: 'none', 
+          border: 'none', 
+          padding: 0,
+          zIndex: 100,
+        } : {}) 
+      }}>
+        <button onClick={saveAttendance} disabled={savingAttendance} style={{
+          ...styles.saveBtn, 
+          ...(isMobile ? {
+            borderRadius: '50px', 
+            padding: '10px 16px', 
+            fontSize: '13px',
+            fontWeight: 700,
+            boxShadow: '0 6px 20px rgba(99, 102, 241, 0.45)',
+            background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
+          } : {})
+        }}>
+          {savingAttendance ? 'Saving...' : '💾 Save'}
+        </button>
+      </div>
+    </div>
+  );
 
   const renderContent = () => (
     <>
       {activeTab === 'analytics' && <Analytics />}
       {activeTab === 'students' && <StudentsTable />}
       {activeTab === 'mentors' && <MentorsTable />}
+      {activeTab === 'attendance' && renderAttendanceContent()}
       {activeTab === 'logs' && <ActivityLogs />}
       {activeTab === 'report' && <AttendanceReport />}
     </>
