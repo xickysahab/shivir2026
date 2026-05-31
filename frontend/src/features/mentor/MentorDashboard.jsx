@@ -67,6 +67,29 @@ export default function MentorDashboard() {
     setAttendanceData(prev => prev.map(s => ({ ...s, status })));
   };
 
+  const handleToggleKit = async (studentId, currentStatus) => {
+    try {
+      const res = await fetch(`/api/students/${studentId}/kit`, {
+        method: 'PATCH',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ kit_received: !currentStatus })
+      });
+      const data = await res.json();
+      if (data.success) {
+        setAttendanceData(prev => prev.map(s => s.id === studentId ? { ...s, kit_received: !currentStatus } : s));
+        showToast(data.message || 'Kit status updated!', 'success');
+      } else {
+        showToast(data.message || 'Failed to update kit', 'error');
+      }
+    } catch (err) {
+      console.error(err);
+      showToast('Network error', 'error');
+    }
+  };
+
   async function saveAttendance() {
     setSavingAttendance(true);
     try {
@@ -163,9 +186,25 @@ export default function MentorDashboard() {
                 <div style={{...styles.studentAvatar, ...(isMobile ? {width: '32px', height: '32px', fontSize: '13px'} : {})}}>{student.name.charAt(0).toUpperCase()}</div>
                 <div>
                   <div style={{...styles.studentName, ...(isMobile ? {fontSize: '13px', marginBottom: '2px'} : {})}}>{student.name} <span style={{fontSize: '11px', color: 'rgba(255,255,255,0.5)', fontWeight: 'normal'}}> (S/o {student.father_name})</span></div>
-                  <div style={{...styles.studentMeta, ...(isMobile ? {fontSize: '11px'} : {})}}>
-                    Roll: {student.roll_no} | {student.gender} | Age: {student.age}
-                    {student.kit_received ? ' | 🎒 Kit Given' : ' | ❌ No Kit'}
+                  <div style={{...styles.studentMeta, ...(isMobile ? {fontSize: '11px'} : {}), display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '4px'}}>
+                    Roll: {student.roll_no} | {student.gender} | Age: {student.age} |
+                    <button 
+                      onClick={(e) => { e.stopPropagation(); handleToggleKit(student.id, student.kit_received); }}
+                      style={{
+                        background: student.kit_received ? 'rgba(16, 185, 129, 0.2)' : 'rgba(244, 63, 94, 0.2)',
+                        color: student.kit_received ? '#10b981' : '#f43f5e',
+                        border: `1px solid ${student.kit_received ? 'rgba(16, 185, 129, 0.3)' : 'rgba(244, 63, 94, 0.3)'}`,
+                        padding: '2px 8px',
+                        borderRadius: '12px',
+                        fontSize: '10px',
+                        fontWeight: 'bold',
+                        cursor: 'pointer',
+                        marginLeft: '4px',
+                        transition: 'all 0.2s ease'
+                      }}
+                    >
+                      {student.kit_received ? '🎒 Kit Given' : '❌ No Kit'}
+                    </button>
                   </div>
                 </div>
               </div>
