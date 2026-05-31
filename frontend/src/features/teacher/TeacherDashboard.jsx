@@ -183,7 +183,7 @@ export default function TeacherDashboard() {
               <div style={{...styles.studentInfo, ...(isMobile ? {gap: '10px'} : {})}}>
                 <div style={{...styles.studentAvatar, ...(isMobile ? {width: '32px', height: '32px', fontSize: '13px'} : {})}}>{student.name.charAt(0).toUpperCase()}</div>
                 <div>
-                  <div style={{...styles.studentName, ...(isMobile ? {fontSize: '13px', marginBottom: '2px'} : {})}}>{student.name}</div>
+                  <div style={{...styles.studentName, ...(isMobile ? {fontSize: '13px', marginBottom: '2px', wordBreak: 'break-word', whiteSpace: 'normal'} : {})}}>{student.name}</div>
                   <div style={{...styles.studentMeta, ...(isMobile ? {fontSize: '11px'} : {})}}>Roll: {student.roll_no} | {student.gender}</div>
                 </div>
               </div>
@@ -216,7 +216,7 @@ export default function TeacherDashboard() {
       <div style={{ 
         ...styles.floatingSaveBar, 
         ...(isMobile ? { 
-          bottom: '72px',
+          bottom: 'calc(env(safe-area-inset-bottom, 12px) + 85px)',
           right: '16px',
           left: 'auto',
           background: 'none', 

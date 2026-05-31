@@ -162,6 +162,9 @@ const styles = {
     top: 0,
     zIndex: 50,
   },
+  mobileStatsRow: {
+    display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '10px'
+  },
   mobileTopBarLeft: {
     display: 'flex', alignItems: 'center', gap: '10px'
   },

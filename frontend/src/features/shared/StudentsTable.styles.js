@@ -17,7 +17,7 @@ const styles = {
   td: { padding: '16px', borderBottom: '1px solid rgba(255,255,255,0.05)' },
   tr: { transition: 'background 0.2s' },
   badge: { background: 'rgba(99,102,241,0.2)', color: '#818cf8', padding: '4px 10px', borderRadius: '6px', fontSize: '12px', fontWeight: 'bold' },
-  actionBtns: { display: 'flex', gap: '4px' },
+  actionBtns: { display: 'flex', gap: '6px', flexWrap: 'wrap' },
   btnIcon: { background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', cursor: 'pointer', fontSize: '16px', padding: '8px', opacity: 0.9, borderRadius: '10px', transition: 'all 0.2s ease', display: 'flex', alignItems: 'center', justifyContent: 'center' },
   btnIconDelete: { background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)', cursor: 'pointer', fontSize: '16px', padding: '8px', opacity: 0.9, borderRadius: '10px', transition: 'all 0.2s ease', display: 'flex', alignItems: 'center', justifyContent: 'center' },
   btnIconKitActive: { background: 'rgba(16, 185, 129, 0.15)', border: '1px solid rgba(16, 185, 129, 0.4)', cursor: 'pointer', fontSize: '16px', padding: '8px', opacity: 1, borderRadius: '10px', boxShadow: '0 4px 12px rgba(16, 185, 129, 0.2)', transition: 'all 0.2s ease', display: 'flex', alignItems: 'center', justifyContent: 'center' },
@@ -117,8 +117,9 @@ const styles = {
   mobileCardTop: {
     display: 'flex',
     justifyContent: 'space-between',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     gap: '12px',
+    flexWrap: 'wrap',
   },
   mobileCardInfo: {
     display: 'flex',
@@ -146,6 +147,8 @@ const styles = {
     fontSize: '16px',
     fontWeight: 700,
     letterSpacing: '0.3px',
+    wordBreak: 'break-word',
+    whiteSpace: 'normal',
   },
   mobileCardMeta: {
     color: 'rgba(255,255,255,0.5)',

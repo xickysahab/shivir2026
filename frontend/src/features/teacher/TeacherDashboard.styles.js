@@ -348,7 +348,7 @@ const styles = {
     backdropFilter: 'blur(12px)',
   },
   mobileStatsRow: {
-    display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px'
+    display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '10px'
   },
   mobileStudentRow: {
     background: 'linear-gradient(145deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.01) 100%)', 
